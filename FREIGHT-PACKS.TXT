@@ -1,0 +1,777 @@
+Here’s your Freight & Categorisation “Bible”—everything a dev needs to understand, operate, extend, and safely change the system. It’s dense, precise, and free of fluff so they can move fast without guessing.
+
+0) Executive summary (what this does)
+
+Normalises vendor categories → CIS taxonomy; derives unit weight & pack rules.
+
+Models carriers → services → containers → freight rules (cost/limits).
+
+Provides helpers to: pick the best container, explain the decision, and price a product line—deterministically.
+
+Adds delivery options (Signature, ATL, Age-Restricted, Photo, Return) per service.
+
+Ships with views and health checks so regressions are caught early.
+
+1) Core entities & relationships (ERD in words)
+
+Taxonomy & products
+
+vend_products (PK id) → master products (may have avg_weight_grams).
+
+vend_categories (vendor tree) → raw Lightspeed categories.
+
+vend_category_map (vend_category_id → categories.id) → mapping table.
+
+categories (PK id) → CIS canonical taxonomy.
+
+product_categorization_data (staging) → per-product vendor category + resolved CIS category.
+
+product_classification_unified (one row per product) → canonical CIS category, type, confidence, reasoning.
+
+Weights & pack rules
+
+category_weights → default weight per CIS category (fallback if product has none).
+
+category_pack_rules → default pack info per CIS category.
+
+pack_rules → optional overrides at product or category scope.
+
+Freight model
+
+carriers (NZ Post, NZ Couriers/GSS, …).
+
+carrier_services (e.g., NZ Post “Domestic Courier”, “Express Tonight”; GSS “Standard”, “Express”).
+
+containers (carrier- or service-scoped SKUs: DLE, A5, A4, Box sizes, GSS E20/E25b/E40/E50/E60/PP/DP…)
+
+Includes kind (bag,box,document), dims, max weight.
+
+freight_rules (per container): cost, rule caps (weight/units), FK to containers.
+
+Delivery options
+
+delivery_options → master (Signature Required, No ATL, Age-Restricted, Photo, Create Return).
+
+carrier_service_options → which options allowed per service.
+
+High-level flow
+
+Product → CIS category (vend_category_map).
+
+Unit weight = product weight or category weight.
+
+Shipment dims/weight → choose container (by capacity/dims/cost).
+
+Price from freight_rules for that container.
+
+2) Table definitions (what matters)
+2.1 Taxonomy & products
+
+vend_products(id VARCHAR(100) PK, avg_weight_grams INT NULL, …)
+
+vend_categories(categoryID VARCHAR(50) UNIQUE, name, …)
+
+categories(id VARCHAR(50) PK, name, parent_id, depth, lft, rgt, slug, …)
+
+vend_category_map(vend_category_id VARCHAR(50) PK, target_category_id VARCHAR(50) NOT NULL, refinement_status ENUM('unknown','mapped','refined') DEFAULT 'mapped')
+
+FKs: target_category_id → categories(id)
+
+product_categorization_data(product_id VARCHAR(100), lightspeed_category_id VARCHAR(50), category_id VARCHAR(50) NULL, …)
+
+FKs: product_id → vend_products(id), category_id → categories(id)
+
+product_classification_unified(product_id VARCHAR(100) PK, product_type_code VARCHAR(..) NOT NULL, category_id VARCHAR(50) NOT NULL, confidence INT, method, reasoning, …)
+
+FKs: product_id → vend_products(id), category_id → categories(id)
+
+2.2 Weights & pack rules
+
+category_weights(category_id VARCHAR(50), avg_weight_grams INT, …)
+
+prefer category_id (not text codes).
+
+category_pack_rules(category_id VARCHAR(50), default_pack_size, default_outer_multiple, …)
+
+pack_rules(scope ENUM('product','category'), scope_id VARCHAR(50), pack_size, outer_multiple, …)
+
+(Optionally split into pack_rules_product and pack_rules_category for strict FKs.)
+
+2.3 Freight
+
+carriers(carrier_id INT PK, code, name, active)
+
+carrier_services(service_id INT PK, carrier_id INT, code, name)
+
+FK: carrier_id → carriers(carrier_id)
+
+containers(container_id INT PK, carrier_id INT NOT NULL, service_id INT NULL, code VARCHAR(64) NOT NULL, name, kind ENUM('bag','box','document','unknown') DEFAULT 'unknown', length_mm, width_mm, height_mm, max_weight_grams, max_units, UNIQUE (carrier_id, code))
+
+FKs: carrier_id → carriers, service_id → carrier_services
+
+freight_rules(container_id INT PK, container VARCHAR(50) UNIQUE, max_weight_grams INT NULL, max_units INT NULL, cost DECIMAL(10,2) NOT NULL CHECK(cost>=0), created_at, updated_at)
+
+FK: container_id → containers(container_id)
+
+Indexes: (container_id PK), ix_fr_container_id, ix_fr_cap_cost (max_weight_grams, cost), ix_fr_cost (cost)
+
+2.4 Delivery options
+
+delivery_options(option_code VARCHAR(32) PK, name, description)
+
+carrier_service_options(service_id INT, option_code VARCHAR(32), PK(service_id, option_code))
+
+FKs: service_id → carrier_services, option_code → delivery_options
+
+3) Constraints & indexes (final set)
+
+carrier_services.carrier_id → FK carriers(carrier_id)
+
+containers.carrier_id → FK carriers(carrier_id)
+
+containers.service_id → FK carrier_services(service_id) (nullable)
+
+containers:
+
+UNIQUE(carrier_id, code) (dedupe per carrier)
+
+ix_containers_kind(kind)
+
+ix_containers_code(code)
+
+ix_containers_dims(kind, length_mm, width_mm, height_mm)
+
+ix_containers_carrier_service(carrier_id, service_id)
+
+freight_rules.container_id:
+
+PK (container_id)
+
+FK → containers(container_id)
+
+uq_fr_container(container) to keep legacy text unique
+
+ix_fr_cap_cost(max_weight_grams, cost), ix_fr_cost(cost)
+
+vend_category_map.target_category_id → FK categories(id)
+
+product_classification_unified.product_id → FK vend_products(id)
+
+product_classification_unified.category_id → FK categories(id)
+
+product_categorization_data.product_id → FK vend_products(id)
+
+product_categorization_data.category_id → FK categories(id)
+
+(You’ve already applied most of these; the list is here as the canonical reference.)
+
+4) Seed data (as implemented)
+
+NZ Post (carrier_id = 1)
+
+Services: DOM_COURIER, DOM_EXP_TONIGHT
+
+Containers (labels/bags): DLE, A5, A5B, A4, A4B, FS, LF, XL
+
+Containers (boxes/letters): Bag, Small Box, Medium Box, Large Box, PARCEL, BOX_1 .. BOX_5, BOX_WINE, MEDIUM_LETTER, LARGE_LETTER, OVERSIZE_LETTER
+
+Costs: filled per single bag range RRP; boxes/letters derived from Small/Medium/Large anchors; caps synced.
+
+NZ Couriers / GSS (carrier_id = 2)
+
+Services: NZC_STANDARD, NZC_EXPRESS
+
+Containers: E20, E25b, E40, E50, E60, PP, DP, BOX
+
+Costs: baseline aligned to similar NZ Post sizes; caps 15kg for packs, 25kg for boxes.
+
+Delivery options (both carriers)
+
+SIGNATURE_REQUIRED, NO_ATL, AGE_RESTRICTED, PHOTO_REQUIRED, CREATE_RETURN
+
+Allowed per service via carrier_service_options (you pre-filled for both carriers).
+
+5) Views (what they’re for)
+
+v_classification_coverage — Mapped vs Unknown counts for product_classification_unified.
+
+v_weight_coverage — coverage of unit weight: product→category→missing.
+
+v_freight_rules_catalog — carrier ↔ container ↔ rule (cost/caps) snapshot (sanity view).
+
+v_nzpost_eship_containers — NZ Post eShip catalogue (bags + parcel + small/medium/large + letters) for UI.
+
+v_carrier_container_prices — authoritative current pricebook: carrier/service/container + caps + cost.
+
+(Optional) You can add v_zero_or_null_prices, v_missing_container_rules for CI alarms.
+
+6) Functions (signatures & contracts)
+pick_container_id(in_carrier_id, in_length_mm, in_width_mm, in_height_mm, in_weight_g) → INT
+
+Computes volumetric grams (L×W×H m³ × 200 × 1000). If any dim 0/NULL, volumetric = 0.
+
+Required weight = max(actual, volumetric).
+
+Filters to containers of that carrier where:
+
+fr.max_weight_grams ≥ required weight (or NULL = unlimited).
+
+If dims are present for the container, they must fit (bags often height=0 so skip).
+
+Returns the cheapest valid container (ties: lower cap, lower id).
+
+pick_container_json(…) → LONGTEXT(JSON)
+
+Wraps the above; returns JSON with container id, code, name, kind, dims, cap, cost, carrier.
+
+pick_container_cost(…) → DECIMAL(10,2)
+
+Returns the cost for the chosen container.
+
+pick_container_explain_json(…) → LONGTEXT(JSON)
+
+Returns: inputs, computed volumetric & required_g, top 3 candidates with fit booleans and costs, and the picked container. Use for debugging/QA.
+
+price_line_json(in_product_id, in_qty, in_carrier_id) → LONGTEXT(JSON)
+
+Resolves unit weight = product.avg_weight → category_weights → default 100g.
+
+Computes total grams (qty), calls pick_container_json with weight only (dims NULL).
+
+Returns JSON: input, weights, chosen container.
+
+price_line_cost(in_product_id, in_qty, in_carrier_id) → DECIMAL(10,2)
+
+Same logic as above but returns just the money.
+
+Performance notes
+
+Index freight_rules(max_weight_grams, cost) to accelerate picks.
+
+Index containers(carrier_id, code); containers(kind); dims composite for dim-fitting queries.
+
+7) Decision logic (container selection) — dev notes
+
+Volumetric: if all dims provided and >0 → volumetric_kg = L×W×H(m³)×200; else skip volumetric.
+
+Required weight = max(actual_g, volumetric_g).
+
+Fit: container’s max_weight_grams (if set) must cover required; dims (if set) must be ≥ item dims.
+
+Cheapest wins (tie-break on lower cap, then id).
+
+Kind rules (recommended):
+
+If in_height_mm > 0 and big dims, prefer kind IN ('box','document') over bag.
+
+Use delivery option constraints at booking time (e.g., Age-Restricted might force signature).
+
+You already set the bag sanity (caps ≤ 15kg checks suggested earlier) and post-insert health checks.
+
+8) Operational playbook (copy-paste queries)
+
+What vendor categories still unmapped?
+
+SELECT pcd.lightspeed_category_id, COUNT(*) 
+FROM product_categorization_data pcd
+LEFT JOIN vend_category_map vcm ON vcm.vend_category_id = pcd.lightspeed_category_id
+WHERE vcm.target_category_id IS NULL
+GROUP BY 1 ORDER BY 2 DESC;
+
+
+Any product missing classification row?
+
+SELECT vp.id, vp.name
+FROM vend_products vp
+LEFT JOIN product_classification_unified pcu ON pcu.product_id = vp.id
+WHERE pcu.product_id IS NULL;
+
+
+Any container without a rule?
+
+SELECT c.* FROM containers c
+LEFT JOIN freight_rules fr ON fr.container_id = c.container_id
+WHERE fr.container_id IS NULL;
+
+
+Current catalogue by carrier
+
+SELECT * FROM v_carrier_container_prices;
+
+
+Price a line (weight-only)
+
+SELECT price_line_cost('<product_id>', 3, 1); -- NZ Post
+
+
+Explain a pick (for QA)
+
+SELECT pick_container_explain_json(2, 415, 360, 0, 14000);
+
+9) Data quality & CI checks (add to nightly)
+
+Zero/NULL prices
+
+SELECT * FROM freight_rules fr WHERE fr.cost IS NULL OR fr.cost=0.00;
+
+
+Rule cap > container cap
+
+SELECT fr.* FROM freight_rules fr 
+JOIN containers c ON c.container_id=fr.container_id
+WHERE c.max_weight_grams IS NOT NULL 
+  AND (fr.max_weight_grams IS NULL OR fr.max_weight_grams>c.max_weight_grams);
+
+
+Unknown container kind
+
+SELECT * FROM containers WHERE kind='unknown';
+
+
+Products missing any weight
+
+SELECT pcu.product_id 
+FROM product_classification_unified pcu
+LEFT JOIN vend_products vp ON vp.id=pcu.product_id
+LEFT JOIN category_weights cw ON cw.category_id=pcu.category_id
+WHERE vp.avg_weight_grams IS NULL AND cw.avg_weight_grams IS NULL;
+
+10) Extensibility (“change it up” safely)
+
+Add a new carrier: insert into carriers, seed carrier_services, seed containers (codes, dims, caps), then insert freight_rules; run health views.
+
+Add a new pack (e.g., NZ Post adds “A2”): add to containers (kind, dims, caps), add to freight_rules (cost), re-run v_carrier_container_prices.
+
+Service-specific containers: set containers.service_id (NULL means general); the pick still works.
+
+Zoned or scheduled pricing: add columns to freight_rules (zone_code, effective_from/to), include them in your pick filters or a new pricing_rules table keyed by (carrier_id, service_id, container_id, zone, date).
+
+Different volumetric factors: add carriers.volumetric_factor (default 200) and modify pick_container_id to use it.
+
+11) “Gotchas” (things that bite)
+
+Bag labels on boxes: NZ Post forbids using “Courier Pack” labels for boxes; your UI should warn if kind='bag' but dims/weight imply a box.
+
+NULL dims: We treat NULL/0 dims as “dimensionless” (no volumetric) → only weight matters; provide dims if you want volumetric pricing to apply.
+
+Multiple category IDs: Standardise to categories.id (GUID) everywhere; avoid text slugs in joins.
+
+Freight rule orphans: With PK on freight_rules(container_id) + FK to containers, you’re safe (what you set up already).
+
+12) Quick reference (cheat sheet)
+
+Pick cheapest container by carrier + inputs
+pick_container_id(carrier_id, Lmm, Wmm, Hmm, grams) → container_id
+pick_container_cost(… ) → DECIMAL
+pick_container_json(… ) → JSON
+pick_container_explain_json(… ) → JSON (top 3 + reasons)
+price_line_cost(product_id, qty, carrier_id) → DECIMAL
+price_line_json(product_id, qty, carrier_id) → JSON
+
+Authoritative catalogue for UI
+SELECT * FROM v_carrier_container_prices;
+
+Health
+
+Unknown kinds? containers.kind='unknown'
+
+0/NULL prices? freight_rules.cost IN (0, NULL)
+
+Rule cap > container cap? fix immediately
+
+Missing weight? Patch vend_products.avg_weight_grams or category_weights.
+
+What’s in place (yes ✅)
+
+FKs
+
+vend_category_map.target_category_id → categories(id) ✅
+
+product_classification_unified.product_id → vend_products(id) ✅
+
+product_classification_unified.category_id → categories(id) ✅
+
+product_categorization_data.product_id → vend_products(id) ✅
+
+product_categorization_data.category_id → categories(id) ✅
+
+containers.carrier_id → carriers(carrier_id) / containers.service_id → carrier_services(service_id) ✅
+
+freight_rules.container_id → containers(container_id) (PK on container_id) ✅
+
+Key indexes
+
+freight_rules: PRIMARY(container_id), ix_fr_container_id, ix_fr_cap_cost(max_weight_grams,cost), ix_fr_cost(cost) ✅
+
+containers: UNIQUE(carrier_id,code), ix_containers_kind(kind), ix_containers_code(code), ix_containers_dims(kind,length_mm,width_mm,height_mm), ix_containers_carrier_service(carrier_id,service_id) ✅
+
+carrier_services.carrier_id FK index (implicit via FK) ✅
+
+Views & helpers
+
+v_classification_coverage, v_weight_coverage, v_freight_rules_catalog, v_nzpost_eship_containers, v_carrier_container_prices ✅
+
+Functions: pick_container_id/json/cost, pick_container_explain_json, price_line_json/price_line_cost ✅
+
+Seeds
+
+NZ Post eShip bags/parcel + letter & box sizes with RRPs/caps ✅
+
+NZ Couriers (GSS) Express Packs + box with baselines ✅
+
+Delivery options + allowed per service (both carriers) ✅
+
+Nice-to-have hardening (safe to apply now)
+
+(Each is one line; run if you want the model locked tighter.)
+
+Make classification category non-null (now that backfill’s done):
+
+ALTER TABLE product_classification_unified MODIFY category_id VARCHAR(50) NOT NULL;
+
+
+Do the same for staging (if every row has a map now):
+
+ALTER TABLE product_categorization_data MODIFY category_id VARCHAR(50) NOT NULL;
+
+
+Ensure mapping key is indexed (usually already, but harmless to add):
+
+ALTER TABLE vend_category_map ADD INDEX ix_vcm_vendor (vend_category_id), ADD INDEX ix_vcm_target (target_category_id);
+
+
+Speed up category joins:
+
+ALTER TABLE product_classification_unified ADD INDEX ix_pcu_category (category_id);
+ALTER TABLE product_categorization_data  ADD INDEX ix_pcd_category (category_id);
+
+
+Fast path for product weight lookups:
+
+ALTER TABLE vend_products ADD INDEX ix_vp_weight (avg_weight_grams);
+
+Tiny audits to answer “what’s left?”
+
+How many products still ‘Unknown’?
+
+SELECT
+  SUM(pcu.category_id='00000000-0000-0000-0000-000000000000') AS unknown_products,
+  COUNT(*) AS total_products,
+  ROUND(100*SUM(pcu.category_id='00000000-0000-0000-0000-000000000000')/COUNT(*),2) AS unknown_pct
+FROM product_classification_unified pcu;
+
+
+Which vendor categories are feeding ‘Unknown’? (quick list)
+
+SELECT pcd.lightspeed_category_id, COUNT(*) AS products
+FROM product_categorization_data pcd
+JOIN product_classification_unified pcu ON pcu.product_id=pcd.product_id
+WHERE pcu.category_id='00000000-0000-0000-0000-000000000000'
+GROUP BY 1 ORDER BY products DESC LIMIT 50;
+
+
+Missing unit weights (product & category both null)
+
+SELECT COUNT(*) AS missing_weight
+FROM product_classification_unified pcu
+LEFT JOIN vend_products vp ON vp.id=pcu.product_id
+LEFT JOIN category_weights cw ON cw.category_id=pcu.category_id
+WHERE vp.avg_weight_grams IS NULL AND cw.avg_weight_grams IS NULL;
+
+
+If those counts are low, you’re in great shape. If they’re high, we’ll bulk-map those vendor category GUIDs to proper CIS categories (we already parked unknowns safely), and set a few category fallback weights to eliminate weight gaps.
+
+Bottom line
+
+Yes, schemas, FKs, indexes, and views/functions are up to date based on all the work we just did.
+
+The only “open” item is content: some products will remain in Unknown until you decide their CIS category (and optionally assign product weights). That’s normal, and the system handles it safely with sensible fallbacks.
+
+
+A) Categorisation (how we decide “what a product is”)
+A.1 Canonical taxonomy & mapping
+
+Goal: Every product has one CIS category (categories.id) that downstream systems can trust.
+
+Pipeline (deterministic):
+
+product_categorization_data.lightspeed_category_id (raw from Vend).
+
+Map via vend_category_map(vend_category_id → categories.id) (explicit).
+
+Promote to product_classification_unified (product_id, category_id, product_type_code, confidence, method, reasoning).
+
+Confidence & provenance:
+
+method: system (mapped), model (ML), manual (ops fixed).
+
+confidence: 0–100; treat <50 as “needs review”.
+
+Audits (quick):
+
+-- Products still 'Unknown' category
+SELECT COUNT(*) FROM product_classification_unified WHERE category_id='00000000-0000-0000-0000-000000000000';
+
+-- Vendor categories producing the most 'Unknown'
+SELECT pcd.lightspeed_category_id, COUNT(*) c
+FROM product_categorization_data pcd
+JOIN product_classification_unified pcu USING (product_id)
+WHERE pcu.category_id='00000000-0000-0000-0000-000000000000'
+GROUP BY 1 ORDER BY c DESC LIMIT 20;
+
+A.2 Category signals that matter for logistics
+
+Hazmat/Restricted flags (nic salts, batteries): keep as boolean flags on categories.
+
+Fragility (glass tanks): drives “box only” policy and min_padding_mm.
+
+Temperature sensitivity (rare, but noteable): plan future cold-chain rules.
+
+Freight sensitivity: map category → default pack size, outer multiple, avg weight.
+
+B) Packaging: unit → inner → outer → master carton
+B.1 Why it matters
+
+Packaging hierarchy converts sellable quantity into freightable units and affects cost:
+
+Some products must ship in outers (leaks/spills, glass, aerosols).
+
+Outer multiples reduce damages and chargeable “tickets.”
+
+B.2 Data model (minimal, powerful)
+Tables you already have
+
+pack_rules — precedence logic (product > category > defaults).
+
+category_pack_rules — defaults per category (e.g., default_pack_size, default_outer_multiple).
+
+Recommended adds (small, surgical)
+
+1) Master carton specs (by product or category)
+
+CREATE TABLE IF NOT EXISTS carton_specs (
+  scope ENUM('product','category') NOT NULL,
+  scope_id VARCHAR(50) NOT NULL,
+  units_per_carton INT NOT NULL,
+  carton_length_mm INT NULL,
+  carton_width_mm  INT NULL,
+  carton_height_mm INT NULL,
+  carton_weight_g  INT NULL,         -- optional: empty + dunnage
+  is_mandatory TINYINT(1) NOT NULL DEFAULT 0, -- forces full carton quantities
+  PRIMARY KEY (scope, scope_id)
+);
+
+
+2) Packaging policy flags
+
+ALTER TABLE pack_rules
+  ADD COLUMN must_outer_pack TINYINT(1) NOT NULL DEFAULT 0,
+  ADD COLUMN min_outer_multiple INT NULL,
+  ADD COLUMN max_units_per_pack INT NULL;
+
+
+3) Retail/inner pack vs “ship pack” distinction
+
+Keep default_pack_size (retail inner).
+
+Add ship_pack_min so freight can round up when fragile.
+
+ALTER TABLE category_pack_rules
+  ADD COLUMN ship_pack_min INT NULL;
+
+B.3 Precedence rules (clear, predictable)
+
+Pack size: pack_rules(scope='product') → pack_rules(scope='category') → category_pack_rules.default_pack_size → 1.
+
+Outer multiple: same precedence; if must_outer_pack=1, enforce ceiling to nearest outer_multiple.
+
+Carton specs: if carton_specs.is_mandatory=1, convert quantities to full cartons (ceil).
+
+Helper view (consolidated packaging profile):
+
+CREATE OR REPLACE VIEW v_product_pack_profile AS
+SELECT
+  pcu.product_id,
+  pcu.category_id,
+  COALESCE(pr_prod.pack_size, pr_cat.pack_size, cpr.default_pack_size, 1) AS pack_size,
+  COALESCE(pr_prod.outer_multiple, pr_cat.outer_multiple, cpr.default_outer_multiple, 1) AS outer_multiple,
+  COALESCE(pr_prod.must_outer_pack, pr_cat.must_outer_pack, 0) AS must_outer_pack,
+  COALESCE(cpr.ship_pack_min, 1) AS ship_pack_min,
+  cs.units_per_carton,
+  cs.is_mandatory AS carton_mandatory
+FROM product_classification_unified pcu
+LEFT JOIN pack_rules pr_prod ON pr_prod.scope='product' AND pr_prod.scope_id=pcu.product_id
+LEFT JOIN pack_rules pr_cat  ON pr_cat.scope='category' AND pr_cat.scope_id=pcu.category_id
+LEFT JOIN category_pack_rules cpr ON cpr.category_id=pcu.category_id
+LEFT JOIN carton_specs cs
+  ON (cs.scope='product'  AND cs.scope_id=pcu.product_id)
+  OR (cs.scope='category' AND cs.scope_id=pcu.category_id);
+
+B.4 Turning quantity into ship units (deterministic)
+
+Algorithm (in order):
+
+Q1 = ceil(qty / max(pack_size, ship_pack_min)) → retail packs.
+
+If must_outer_pack, round up Q1 to nearest outer_multiple.
+
+If carton_mandatory, apply cartons:
+cartons = ceil((Q1) / units_per_carton); Q2 = cartons * units_per_carton.
+
+Q_ship = Q2 → number of sale units to ship; weight = Q_ship * unit_weight_g.
+
+SQL helper function (pure maths):
+
+DELIMITER //
+CREATE OR REPLACE FUNCTION calc_ship_units(
+  in_qty INT, in_pack_size INT, in_ship_pack_min INT,
+  in_outer_multiple INT, in_must_outer TINYINT(1),
+  in_units_per_carton INT, in_carton_mandatory TINYINT(1)
+) RETURNS INT
+DETERMINISTIC
+BEGIN
+  DECLARE q1 INT; DECLARE q2 INT; DECLARE eff_pack INT;
+  SET eff_pack = GREATEST(COALESCE(in_pack_size,1), COALESCE(in_ship_pack_min,1));
+  SET q1 = CEIL( GREATEST(in_qty,0) / eff_pack );
+
+  IF in_must_outer = 1 AND COALESCE(in_outer_multiple,1) > 1 THEN
+    SET q1 = CEIL(q1 / in_outer_multiple) * in_outer_multiple;
+  END IF;
+
+  SET q2 = q1;
+  IF in_carton_mandatory = 1 AND COALESCE(in_units_per_carton,0) > 0 THEN
+    SET q2 = CEIL(q1 / in_units_per_carton) * in_units_per_carton;
+  END IF;
+
+  RETURN q2;
+END//
+DELIMITER ;
+
+
+Audit (find painful skus):
+
+SELECT pcu.product_id, vp.name, vpp.pack_size, vpp.outer_multiple, vpp.units_per_carton
+FROM v_product_pack_profile vpp
+JOIN product_classification_unified pcu USING (product_id)
+JOIN vend_products vp ON vp.id=pcu.product_id
+WHERE (vpp.must_outer_pack=1 AND (vpp.outer_multiple IS NULL OR vpp.outer_multiple<=1))
+   OR (vpp.carton_mandatory=1 AND vpp.units_per_carton IS NULL);
+
+C) Seeding logic (new store / reset store)
+C.1 What is “seeding”?
+
+Initial stocking of a new/emptied store using company-wide inventory, sales velocity, and fair-share.
+
+Goals: breadth first (cover top movers), then depth within capacity and freight efficiency.
+
+C.2 Inputs & knobs
+
+Sales velocity: rolling 4–8 weeks (exclude promos), per category/product.
+
+Coverage target: min SKUs per family (e.g., 3 coils families, 5 house juices).
+
+Safety buffer: X days of demand (category-specific).
+
+Store archetype: kiosk vs destination (multiplier on depth).
+
+Freight envelope: cap total cartons/tickets for the seeding run.
+
+C.3 Algorithm (high level)
+
+Candidate set: top N products by company sales; filter banned categories (e.g., restricted in that locale).
+
+Per-product target qty = round_up(velocity * buffer_days / 7) clamped by:
+
+Min ship pack (from packaging profile).
+
+Outer multiple if mandatory.
+
+Greedy allocation: for each product, allocate from donors (stores/warehouse) with highest surplus to target store, obeying:
+
+Donor minimum stock thresholds.
+
+Freight envelope (don’t exceed total cartons/tickets).
+
+Bundle by cartons: prefer full cartons when near a threshold.
+
+Helpful SQL stub (pre-allocation view):
+
+CREATE OR REPLACE VIEW v_seed_targets AS
+SELECT
+  pcu.product_id,
+  pcu.category_id,
+  /* plug in your velocity metric here */ 1 AS weekly_vel,
+  /* example: 14 days buffer */ 14 AS buffer_days
+FROM product_classification_unified pcu
+WHERE pcu.category_id <> '00000000-0000-0000-0000-000000000000';
+
+
+Then in app code:
+
+Get packaging profile (v_product_pack_profile) + weekly_vel.
+
+Compute target qty, then ship_units = calc_ship_units(target_qty, …).
+
+Convert ship_units * unit_weight_g into a picked container and freight price via pick_container_*.
+
+D) Freight + packaging together (cartonization-aware pricing)
+D.1 End-to-end line pricing (packaging aware)
+
+Step 1: Get packaging profile for product.
+
+Step 2: ship_units = calc_ship_units(qty, …).
+
+Step 3: total weight = ship_units * (product.avg_weight_g OR category_weight_g).
+
+Step 4: container = pick_container_id(carrier, dims?, weight_g).
+
+Step 5: price = freight_rules.cost.
+
+Example (compact):
+
+SELECT
+  pcu.product_id,
+  vpp.pack_size, vpp.outer_multiple, vpp.units_per_carton,
+  calc_ship_units(12, vpp.pack_size, vpp.ship_pack_min, vpp.outer_multiple, vpp.must_outer_pack,
+                  vpp.units_per_carton, vpp.carton_mandatory) AS ship_units,
+  pick_container_cost(1, NULL, NULL, NULL,  /* NZ Post */
+    calc_ship_units(12, vpp.pack_size, vpp.ship_pack_min, vpp.outer_multiple, vpp.must_outer_pack,
+                    vpp.units_per_carton, vpp.carton_mandatory) * COALESCE(vp.avg_weight_grams, cw.avg_weight_grams, 100)
+  ) AS freight_cost
+FROM v_product_pack_profile vpp
+JOIN product_classification_unified pcu USING (product_id)
+LEFT JOIN vend_products vp ON vp.id=pcu.product_id
+LEFT JOIN category_weights cw ON cw.category_id=pcu.category_id
+WHERE pcu.product_id = '<product_id_here>';
+
+E) Ops checklists (what to tune when things feel “off”)
+
+Too many ‘Unknown’: map the top 10 vendor categories feeding Unknown; set category_weights for those buckets.
+
+Freight too high: confirm volumetric (dims) are present; ensure cartons define better per-unit packing.
+
+Damages on arrival: set must_outer_pack=1; increase ship_pack_min.
+
+Excess tickets: increase outer_multiple or define units_per_carton.
+
+Wrong container chosen: use pick_container_explain_json(..) to see top 3 candidates and adjust caps/costs.
+
+F) Future-proofing (small schema hooks that pay off)
+
+Add carriers.volumetric_factor (default 200) to support carriers with different volumetric rules.
+
+Add freight_rules.zone_code (nullable) to pivot to zoned pricing without redesign.
+
+Add freight_rules.effective_from/effective_to to handle price changes over time.
+
+Add containers.soft_deleted & freight_rules.soft_deleted for non-destructive deprecations.
+
+If you later want service-specific containers (Express Tonight bags): set containers.service_id and keep our pick join—it already supports it.
+
+G) What remains “content” work (not plumbing)
+
+Refining Unknowns: deliberately map any remaining high-volume Unknown categories → CIS categories.
+
+Weights: fill vend_products.avg_weight_grams for top movers; fallback categories already work, but concrete product weights improve volumetric picks and cost accuracy.
+
+Carton specs: define units_per_carton for fragile/liquid categories (outer mandatory), and for bulky SKUs.

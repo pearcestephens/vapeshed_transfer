@@ -1,0 +1,28 @@
+-- Internal catalog product images (for image similarity + vision alignment)
+CREATE TABLE IF NOT EXISTS vend_product_images (
+  image_id CHAR(36) PRIMARY KEY,
+  product_id VARCHAR(64) NOT NULL,
+  image_url TEXT NOT NULL,
+  url_hash CHAR(64) NOT NULL,
+  status ENUM('pending_fetch','fetched','error') NOT NULL DEFAULT 'pending_fetch',
+  content_hash CHAR(64) NULL,
+  p_hash CHAR(64) NULL,
+  d_hash CHAR(32) NULL,
+  a_hash CHAR(32) NULL,
+  dominant_color CHAR(7) NULL,
+  p_bits TEXT NULL,
+  d_bits TEXT NULL,
+  a_bits TEXT NULL,
+  width INT NULL,
+  height INT NULL,
+  bytes INT NULL,
+  format VARCHAR(16) NULL,
+  error_msg VARCHAR(255) NULL,
+  fetched_at DATETIME NULL,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_product_urlhash (product_id, url_hash),
+  KEY idx_product (product_id),
+  KEY idx_p_hash (p_hash),
+  KEY idx_d_hash (d_hash),
+  KEY idx_a_hash (a_hash)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

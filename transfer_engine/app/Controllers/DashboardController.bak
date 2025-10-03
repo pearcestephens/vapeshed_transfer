@@ -1,0 +1,331 @@
+<?php
+declare(strict_types=1);
+
+namespace App\Controllers;
+
+/**
+ * Dashboard Controller
+ * 
+ * @author Pearce Stephens <pearce.stephens@ecigdis.co.nz>
+ * @company Ecigdis Ltd (The Vape Shed)
+ * @description Main dashboard with metrics and overview
+ */
+
+class DashboardController extends BaseController
+{
+    private object $transferService;
+    private object $configManager;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->transferService = new \App\Services\TransferEngineService();
+        $this->configManager = new \App\Core\ConfigManager();
+    }
+
+    /**
+     * Display main dashboard
+     */
+    public function index(): void
+    {
+        // $this->requireAuth(); // Disabled for testing
+
+        try {
+            // Get dashboard metrics
+            $metrics = $this->getDashboardMetrics();
+            
+            // Get recent executions
+            $recentExecutions = $this->getRecentExecutions(5);
+            
+            // Get active configurations
+            $activeConfigs = $this->configManager->getActiveConfigurations();
+            
+            // Get system status
+            $systemStatus = $this->getSystemStatus();
+            
+            $this->render('dashboard/index', [
+                'metrics' => $metrics,
+                'recent_executions' => $recentExecutions,
+                'active_configs' => $activeConfigs,
+                'system_status' => $systemStatus,
+                'title' => 'Transfer Engine Dashboard'
+            ]);
+            
+        } catch (Exception $e) {
+            $this->logger->error('Failed to load dashboard', [
+                'error' => $e->getMessage(),
+                'user_id' => $_SESSION['user_id'] ?? null
+            ]);
+            
+            // Show error dashboard
+            $this->render('dashboard/error', [
+                'error' => $e->getMessage(),
+                'title' => 'Dashboard Error'
+            ]);
+        }
+    }
+
+    /**
+     * Get comprehensive dashboard metrics
+     */
+    private function getDashboardMetrics(): array
+    {
+        $db = $this->app->get('Database');
+        
+        // Total transfers in last 30 days
+        $stmt = $db->prepare("
+            SELECT COUNT(*) as total_transfers,
+                   AVG(execution_time_seconds) as avg_execution_time,
+                   SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as successful_transfers,
+                   SUM(total_items_processed) as total_items_processed
+            FROM transfer_executions 
+            WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+        ");
+        $stmt->execute();
+        $totals = $stmt->get_result()->fetch_assoc();
+        
+        // Calculate success rate
+        $successRate = $totals['total_transfers'] > 0 
+            ? $totals['successful_transfers'] / $totals['total_transfers'] 
+            : 0;
+        
+        // Active configurations count
+        $stmt = $db->prepare("SELECT COUNT(*) as count FROM transfer_configurations WHERE is_active = 1");
+        $stmt->execute();
+        $activeConfigs = $stmt->get_result()->fetch_assoc()['count'];
+        
+        // Today's executions
+        $stmt = $db->prepare("
+            SELECT COUNT(*) as count 
+            FROM transfer_executions 
+            WHERE DATE(created_at) = CURDATE()
+        ");
+        $stmt->execute();
+        $todayExecutions = $stmt->get_result()->fetch_assoc()['count'];
+        
+        // Average items per transfer
+        $avgItems = $totals['total_transfers'] > 0 
+            ? $totals['total_items_processed'] / $totals['total_transfers'] 
+            : 0;
+        
+        // Recent performance trend (last 7 days vs previous 7 days)
+        $stmt = $db->prepare("
+            SELECT 
+                SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 ELSE 0 END) as recent_week,
+                SUM(CASE WHEN created_at >= DATE_SUB(NOW(), INTERVAL 14 DAY) 
+                         AND created_at < DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1 ELSE 0 END) as previous_week
+            FROM transfer_executions
+            WHERE created_at >= DATE_SUB(NOW(), INTERVAL 14 DAY)
+        ");
+        $stmt->execute();
+        $trend = $stmt->get_result()->fetch_assoc();
+        
+        $trendPercentage = 0;
+        if ($trend['previous_week'] > 0) {
+            $trendPercentage = (($trend['recent_week'] - $trend['previous_week']) / $trend['previous_week']) * 100;
+        } elseif ($trend['recent_week'] > 0) {
+            $trendPercentage = 100;
+        }
+        
+        return [
+            'total_transfers' => (int) $totals['total_transfers'],
+            'success_rate' => $successRate,
+            'avg_execution_time' => (float) $totals['avg_execution_time'],
+            'active_configs' => (int) $activeConfigs,
+            'today_executions' => (int) $todayExecutions,
+            'avg_items_per_transfer' => (float) $avgItems,
+            'performance_trend' => $trendPercentage,
+            'total_items_processed' => (int) $totals['total_items_processed']
+        ];
+    }
+
+    /**
+     * Get recent transfer executions
+     */
+    private function getRecentExecutions(int $limit = 10): array
+    {
+        $db = $this->app->get('Database');
+        
+        $stmt = $db->prepare("
+            SELECT 
+                e.id,
+                e.status,
+                e.simulation_mode,
+                e.total_items_processed,
+                e.execution_time_seconds,
+                e.created_at,
+                e.completed_at,
+                c.name as config_name
+            FROM transfer_executions e
+            LEFT JOIN transfer_configurations c ON e.config_id = c.id
+            ORDER BY e.created_at DESC
+            LIMIT ?
+        ");
+        $stmt->bind_param('i', $limit);
+        $stmt->execute();
+        
+        $result = $stmt->get_result();
+        $executions = [];
+        
+        while ($row = $result->fetch_assoc()) {
+            // Calculate duration if completed
+            if ($row['completed_at']) {
+                $start = new DateTime($row['created_at']);
+                $end = new DateTime($row['completed_at']);
+                $row['duration_seconds'] = $end->getTimestamp() - $start->getTimestamp();
+            } else {
+                $row['duration_seconds'] = null;
+            }
+            
+            $executions[] = $row;
+        }
+        
+        return $executions;
+    }
+
+    /**
+     * Get system status information
+     */
+    private function getSystemStatus(): array
+    {
+        $status = [
+            'database' => 'operational',
+            'kill_switch' => 'inactive',
+            'disk_usage' => 0,
+            'memory_usage' => 0,
+            'last_backup' => null,
+            'version' => '1.0.0'
+        ];
+
+        try {
+            // Check database connection
+            $db = $this->app->get('Database');
+            $db->ping();
+            
+            // Check kill switch status
+            if (file_exists(KILL_SWITCH_FILE)) {
+                $status['kill_switch'] = 'active';
+            }
+            
+            // Get disk usage (if possible)
+            if (function_exists('disk_free_space')) {
+                $bytes = disk_free_space('.');
+                $total = disk_total_space('.');
+                if ($bytes !== false && $total !== false) {
+                    $status['disk_usage'] = (1 - ($bytes / $total)) * 100;
+                }
+            }
+            
+            // Get memory usage
+            $status['memory_usage'] = memory_get_usage(true);
+            
+            // Check for recent backup (placeholder)
+            // This would integrate with your backup system
+            $status['last_backup'] = date('Y-m-d H:i:s', strtotime('-1 day'));
+            
+        } catch (Exception $e) {
+            $this->logger->warning('System status check failed', [
+                'error' => $e->getMessage()
+            ]);
+            $status['database'] = 'error';
+        }
+
+        return $status;
+    }
+
+    /**
+     * Get performance chart data (AJAX endpoint)
+     */
+    public function performanceChart(): void
+    {
+        $this->requireAuth();
+        $this->setJsonHeaders();
+
+        try {
+            $days = (int) ($_GET['days'] ?? 7);
+            $days = min(max($days, 1), 90); // Limit between 1-90 days
+            
+            $db = $this->app->get('Database');
+            
+            $stmt = $db->prepare("
+                SELECT 
+                    DATE(created_at) as date,
+                    COUNT(*) as executions,
+                    AVG(execution_time_seconds) as avg_time,
+                    SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END) as successful,
+                    SUM(total_items_processed) as total_items
+                FROM transfer_executions 
+                WHERE created_at >= DATE_SUB(NOW(), INTERVAL ? DAY)
+                GROUP BY DATE(created_at)
+                ORDER BY date ASC
+            ");
+            $stmt->bind_param('i', $days);
+            $stmt->execute();
+            
+            $result = $stmt->get_result();
+            $chartData = [];
+            
+            while ($row = $result->fetch_assoc()) {
+                $chartData[] = [
+                    'date' => $row['date'],
+                    'executions' => (int) $row['executions'],
+                    'avg_time' => round((float) $row['avg_time'], 2),
+                    'success_rate' => $row['executions'] > 0 
+                        ? round(($row['successful'] / $row['executions']) * 100, 1)
+                        : 0,
+                    'total_items' => (int) $row['total_items']
+                ];
+            }
+            
+            echo json_encode([
+                'success' => true,
+                'data' => $chartData
+            ]);
+            
+        } catch (Exception $e) {
+            $this->logger->error('Failed to get performance chart data', [
+                'error' => $e->getMessage(),
+                'user_id' => $_SESSION['user_id'] ?? null
+            ]);
+            
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Failed to load chart data'
+            ]);
+        }
+    }
+
+    /**
+     * Get live metrics (AJAX endpoint)
+     */
+    public function liveMetrics(): void
+    {
+        $this->requireAuth();
+        $this->setJsonHeaders();
+
+        try {
+            $metrics = $this->getDashboardMetrics();
+            
+            // Add current timestamp
+            $metrics['timestamp'] = date('Y-m-d H:i:s');
+            
+            echo json_encode([
+                'success' => true,
+                'data' => $metrics
+            ]);
+            
+        } catch (Exception $e) {
+            $this->logger->error('Failed to get live metrics', [
+                'error' => $e->getMessage(),
+                'user_id' => $_SESSION['user_id'] ?? null
+            ]);
+            
+            http_response_code(500);
+            echo json_encode([
+                'success' => false,
+                'message' => 'Failed to load metrics'
+            ]);
+        }
+    }
+}

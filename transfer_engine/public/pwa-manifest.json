@@ -1,0 +1,146 @@
+{
+  "name": "The Vape Shed - Your Vaping Experts",
+  "short_name": "VapeShed",
+  "description": "NZ's premier vaping retailer with 17 locations. Quality products, expert advice, competitive prices.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a1a",
+  "theme_color": "#4CAF50",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en-NZ",
+  "dir": "ltr",
+  "categories": ["shopping", "lifestyle"],
+  "prefer_related_applications": false,
+  
+  "icons": [
+    {
+      "src": "/assets/pwa/icon-72x72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/pwa/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/pwa/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/pwa/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/pwa/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/pwa/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/pwa/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/pwa/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  
+  "screenshots": [
+    {
+      "src": "/assets/pwa/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile shopping experience"
+    },
+    {
+      "src": "/assets/pwa/screenshot-desktop.png", 
+      "sizes": "1200x800",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Desktop browsing experience"
+    }
+  ],
+  
+  "shortcuts": [
+    {
+      "name": "My Account",
+      "short_name": "Account",
+      "description": "View your personalized dashboard",
+      "url": "/dashboard?utm_source=pwa_shortcut",
+      "icons": [{ "src": "/assets/pwa/shortcut-account.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Store Locator",
+      "short_name": "Stores",
+      "description": "Find your nearest Vape Shed location",
+      "url": "/stores?utm_source=pwa_shortcut", 
+      "icons": [{ "src": "/assets/pwa/shortcut-stores.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "New Products",
+      "short_name": "New",
+      "description": "Browse the latest arrivals",
+      "url": "/products/new?utm_source=pwa_shortcut",
+      "icons": [{ "src": "/assets/pwa/shortcut-new.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "My Orders",
+      "short_name": "Orders",
+      "description": "Track your order status",
+      "url": "/orders?utm_source=pwa_shortcut",
+      "icons": [{ "src": "/assets/pwa/shortcut-orders.png", "sizes": "96x96" }]
+    }
+  ],
+  
+  "share_target": {
+    "action": "/share-product",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url",
+      "files": [
+        {
+          "name": "images",
+          "accept": ["image/*"]
+        }
+      ]
+    }
+  },
+  
+  "protocol_handlers": [
+    {
+      "protocol": "web+vapeshed",
+      "url": "/handle?type=%s"
+    }
+  ],
+  
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  
+  "launch_handler": {
+    "client_mode": "focus-existing"
+  }
+}

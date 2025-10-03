@@ -1,0 +1,16 @@
+/* Lightweight styles for Full Report Viewer */
+.rv-card { background:#fff; border:1px solid #eee; border-radius:8px; padding:10px; }
+.rv-k { font-size:12px; color:#666; }
+.rv-v { font-size:20px; font-weight:700; }
+.rv-panel { background:#fff; border:1px solid #eee; border-radius:8px; }
+.rv-panel-h { font-weight:600; padding:10px; border-bottom:1px solid #eee; }
+.rv-panel > div:not(.rv-panel-h) { padding:10px; }
+.rv-bar { height: 10px; background:#e8f0fe; border-radius:20px; overflow:hidden; }
+.rv-bar > span { display:block; height:100%; background:#1967d2; border-radius:20px; }
+.rv-kv { display:flex; justify-content:space-between; gap:8px; font-size:12px; }
+.rv-badge { display:inline-block; padding:2px 6px; border-radius:4px; font-size:11px; margin-right:4px; }
+.rv-alloc { background:#e6f4ea; color:#137333; }
+.rv-cap { background:#ffe7e6; color:#c5221f; }
+.rv-near { background:#fff4cc; color:#8a6d3b; }
+.rv-zero { background:#f1f3f4; color:#5f6368; }
+.rv-fk { background:#e8f0fe; color:#1967d2; }

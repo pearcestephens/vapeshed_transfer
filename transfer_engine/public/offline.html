@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en-NZ">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - The Vape Shed</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#4CAF50">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/pwa/icon-32x32.png">
+    <link rel="apple-touch-icon" href="/assets/pwa/icon-192x192.png">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .offline-container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .offline-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+        }
+        
+        .offline-title {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .offline-message {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+        
+        .offline-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+        
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background: #4CAF50;
+            border-color: #4CAF50;
+        }
+        
+        .btn-primary:hover {
+            background: #45a049;
+            border-color: #45a049;
+        }
+        
+        .cached-content {
+            margin-top: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .cached-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+        
+        .cached-list {
+            list-style: none;
+            text-align: left;
+        }
+        
+        .cached-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .cached-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .cached-list a {
+            color: white;
+            text-decoration: none;
+            opacity: 0.9;
+            transition: opacity 0.3s ease;
+        }
+        
+        .cached-list a:hover {
+            opacity: 1;
+        }
+        
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            font-size: 0.9rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .retry-animation {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 480px) {
+            .offline-title {
+                font-size: 1.5rem;
+            }
+            
+            .offline-message {
+                font-size: 1rem;
+            }
+            
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Animation for page load */
+        .offline-container {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">
+            📵
+        </div>
+        
+        <h1 class="offline-title">You're Offline</h1>
+        
+        <p class="offline-message">
+            Don't worry! You can still browse some content that we've saved for you.
+            We'll reconnect automatically when your internet is back.
+        </p>
+        
+        <div class="offline-actions">
+            <button class="btn btn-primary" onclick="retryConnection()">
+                <span class="retry-icon">🔄</span> Try Again
+            </button>
+            
+            <a href="/" class="btn">Go to Home Page</a>
+        </div>
+        
+        <div class="cached-content">
+            <h3 class="cached-title">Available Offline</h3>
+            <ul class="cached-list" id="cached-pages">
+                <li><a href="/">Home Page</a></li>
+                <li><a href="/dashboard">My Dashboard</a></li>
+                <li><a href="/stores">Store Locations</a></li>
+                <li><a href="/products">Product Catalog</a></li>
+                <li><a href="/favorites">My Favorites</a></li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="connection-status" id="connection-status">
+        Offline Mode
+    </div>
+    
+    <script>
+        // Connection monitoring
+        let isRetrying = false;
+        
+        function updateConnectionStatus() {
+            const status = document.getElementById('connection-status');
+            
+            if (navigator.onLine) {
+                status.textContent = 'Connected';
+                status.style.background = 'rgba(76, 175, 80, 0.8)';
+                
+                // Auto-redirect when back online
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1000);
+            } else {
+                status.textContent = 'Offline Mode';
+                status.style.background = 'rgba(255, 152, 0, 0.8)';
+            }
+        }
+        
+        function retryConnection() {
+            if (isRetrying) return;
+            
+            isRetrying = true;
+            const retryIcon = document.querySelector('.retry-icon');
+            const retryBtn = document.querySelector('.btn-primary');
+            
+            retryIcon.classList.add('retry-animation');
+            retryBtn.disabled = true;
+            retryBtn.style.opacity = '0.7';
+            
+            // Test connection
+            fetch('/', { method: 'HEAD', cache: 'no-cache' })
+                .then(response => {
+                    if (response.ok) {
+                        // Connection restored
+                        retryIcon.textContent = '✅';
+                        retryBtn.textContent = ' Connected! Redirecting...';
+                        
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 1000);
+                    } else {
+                        throw new Error('Connection failed');
+                    }
+                })
+                .catch(error => {
+                    // Still offline
+                    console.log('Still offline:', error);
+                    retryIcon.textContent = '❌';
+                    retryBtn.textContent = ' Still Offline';
+                    
+                    setTimeout(() => {
+                        retryIcon.textContent = '🔄';
+                        retryBtn.textContent = ' Try Again';
+                        retryIcon.classList.remove('retry-animation');
+                        retryBtn.disabled = false;
+                        retryBtn.style.opacity = '1';
+                        isRetrying = false;
+                    }, 2000);
+                });
+        }
+        
+        // Load cached pages list
+        function loadCachedPages() {
+            if ('caches' in window) {
+                caches.keys().then(cacheNames => {
+                    const cachedList = document.getElementById('cached-pages');
+                    
+                    // Add common cached pages
+                    const commonPages = [
+                        { url: '/', title: 'Home Page' },
+                        { url: '/dashboard', title: 'My Dashboard' },
+                        { url: '/stores', title: 'Store Locations' },
+                        { url: '/products', title: 'Product Catalog' },
+                        { url: '/account', title: 'My Account' },
+                        { url: '/favorites', title: 'My Favorites' }
+                    ];
+                    
+                    cachedList.innerHTML = '';
+                    
+                    commonPages.forEach(page => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<a href="${page.url}">${page.title}</a>`;
+                        cachedList.appendChild(li);
+                    });
+                });
+            }
+        }
+        
+        // Network status listeners
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            updateConnectionStatus();
+            loadCachedPages();
+            
+            // Periodically check connection
+            setInterval(() => {
+                if (!navigator.onLine && !isRetrying) {
+                    fetch('/', { method: 'HEAD', cache: 'no-cache' })
+                        .then(response => {
+                            if (response.ok) {
+                                updateConnectionStatus();
+                            }
+                        })
+                        .catch(() => {
+                            // Still offline, do nothing
+                        });
+                }
+            }, 10000); // Check every 10 seconds
+        });
+        
+        // Handle page visibility changes
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                updateConnectionStatus();
+            }
+        });
+        
+        // Animate elements on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animation = 'fadeInUp 0.6s ease-out';
+                }
+            });
+        }, observerOptions);
+        
+        // Observe elements
+        document.querySelectorAll('.cached-content, .offline-actions').forEach(el => {
+            observer.observe(el);
+        });
+        
+        // Install prompt handling if available
+        if (window.vapeShedPWA) {
+            const installSection = document.createElement('div');
+            installSection.innerHTML = `
+                <div style="margin-top: 30px;">
+                    <button class="btn" onclick="window.vapeShedPWA.triggerInstall()" style="background: rgba(76, 175, 80, 0.3);">
+                        📱 Install App for Offline Access
+                    </button>
+                </div>
+            `;
+            document.querySelector('.offline-container').appendChild(installSection);
+        }
+    </script>
+</body>
+</html>

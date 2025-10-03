@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>My VapeShed | Mobile Dashboard</title>
+    <meta name="theme-color" content="#003366">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --mobile-primary: #003366;
+            --mobile-secondary: #0066cc;
+            --mobile-accent: #ff6b35;
+            --mobile-success: #28a745;
+            --mobile-warning: #ffc107;
+            --mobile-danger: #dc3545;
+            --mobile-light: #f8f9fa;
+            --mobile-dark: #212529;
+            --touch-target: 44px;
+            --mobile-radius: 16px;
+            --mobile-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --mobile-spacing: 1rem;
+        }
+        
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            touch-action: manipulation;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--mobile-primary) 0%, var(--mobile-secondary) 100%);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            font-size: 16px; /* Prevent iOS zoom */
+        }
+        
+        /* Mobile Header */
+        .mobile-dashboard-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: rgba(0, 51, 102, 0.95);
+            backdrop-filter: blur(20px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 var(--mobile-spacing);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            padding-top: env(safe-area-inset-top);
+        }
+        
+        .mobile-user-info {
+            display: flex;
+            align-items: center;
+            color: white;
+            flex: 1;
+        }
+        
+        .mobile-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--mobile-accent), #ff8e53);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-right: 0.75rem;
+        }
+        
+        .mobile-user-details h6 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .mobile-user-details small {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.8rem;
+        }
+        
+        .mobile-header-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .mobile-header-btn {
+            width: var(--touch-target);
+            height: var(--touch-target);
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .mobile-header-btn:active {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(0.95);
+        }
+        
+        .mobile-notification-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--mobile-accent);
+            color: white;
+            border-radius: 10px;
+            min-width: 18px;
+            height: 18px;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        /* Mobile Content */
+        .mobile-dashboard-content {
+            padding-top: calc(70px + env(safe-area-inset-top));
+            padding-bottom: calc(80px + env(safe-area-inset-bottom));
+            padding-left: var(--mobile-spacing);
+            padding-right: var(--mobile-spacing);
+            min-height: 100vh;
+        }
+        
+        /* Mobile Stats Grid */
+        .mobile-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+            margin: 1rem 0;
+        }
+        
+        .mobile-stat-card {
+            background: white;
+            border-radius: var(--mobile-radius);
+            padding: 1.25rem;
+            box-shadow: var(--mobile-shadow);
+            text-align: center;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .mobile-stat-card:active {
+            transform: scale(0.98);
+        }
+        
+        .mobile-stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--mobile-primary), var(--mobile-secondary));
+        }
+        
+        .mobile-stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--mobile-primary), var(--mobile-secondary));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            margin: 0 auto 0.75rem;
+        }
+        
+        .mobile-stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--mobile-primary);
+            margin-bottom: 0.25rem;
+            line-height: 1;
+        }
+        
+        .mobile-stat-label {
+            font-size: 0.85rem;
+            color: #6c757d;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .mobile-stat-change {
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.25rem;
+        }
+        
+        .mobile-stat-change.positive {
+            color: var(--mobile-success);
+        }
+        
+        .mobile-stat-change.negative {
+            color: var(--mobile-danger);
+        }
+        
+        /* Mobile Cards */
+        .mobile-card {
+            background: white;
+            border-radius: var(--mobile-radius);
+            margin: 1rem 0;
+            box-shadow: var(--mobile-shadow);
+            overflow: hidden;
+        }
+        
+        .mobile-card-header {
+            padding: 1.25rem;
+            background: linear-gradient(45deg, var(--mobile-light), #ffffff);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+        
+        .mobile-card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--mobile-primary);
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .mobile-card-body {
+            padding: 1.25rem;
+        }
+        
+        /* Mobile Brand Analysis */
+        .mobile-brand-item {
+            display: flex;
+            align-items: center;
+            margin: 0.75rem 0;
+            padding: 0.75rem;
+            background: rgba(248, 249, 250, 0.5);
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .mobile-brand-item:active {
+            background: rgba(248, 249, 250, 0.8);
+            transform: scale(0.99);
+        }
+        
+        .mobile-brand-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--mobile-accent), #ff8e53);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: bold;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .mobile-brand-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .mobile-brand-name {
+            font-weight: 600;
+            color: var(--mobile-primary);
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .mobile-brand-stats {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+        
+        .mobile-brand-progress {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .mobile-brand-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--mobile-primary), var(--mobile-secondary));
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        .mobile-brand-percentage {
+            color: var(--mobile-primary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-left: 0.75rem;
+            flex-shrink: 0;
+        }
+        
+        /* Mobile Recommendations */
+        .mobile-recommendations-scroll {
+            display: flex;
+            gap: 1rem;
+            overflow-x: auto;
+            padding: 0.5rem 0;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        .mobile-recommendations-scroll::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .mobile-recommendation-card {
+            flex: 0 0 280px;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+        
+        .mobile-recommendation-card:active {
+            transform: scale(0.98);
+        }
+        
+        .mobile-recommendation-image {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            background: linear-gradient(45deg, #f8f9fa, #e9ecef);
+        }
+        
+        .mobile-recommendation-content {
+            padding: 1rem;
+        }
+        
+        .mobile-recommendation-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--mobile-primary);
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .mobile-recommendation-reason {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-bottom: 0.75rem;
+        }
+        
+        .mobile-recommendation-probability {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .mobile-probability-bar {
+            flex: 1;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .mobile-probability-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--mobile-success), var(--mobile-warning));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .mobile-probability-text {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--mobile-primary);
+        }
+        
+        .mobile-recommendation-btn {
+            width: 100%;
+            height: 36px;
+            background: linear-gradient(45deg, var(--mobile-primary), var(--mobile-secondary));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .mobile-recommendation-btn:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+        
+        /* Mobile Messages */
+        .mobile-message-item {
+            display: flex;
+            align-items: flex-start;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+        
+        .mobile-message-item:active {
+            background: rgba(248, 249, 250, 0.5);
+        }
+        
+        .mobile-message-item:last-child {
+            border-bottom: none;
+        }
+        
+        .mobile-message-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--mobile-accent), #ff8e53);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+        
+        .mobile-message-content {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .mobile-message-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--mobile-primary);
+            margin-bottom: 0.25rem;
+            line-height: 1.3;
+        }
+        
+        .mobile-message-text {
+            font-size: 0.8rem;
+            color: #6c757d;
+            line-height: 1.4;
+            margin-bottom: 0.5rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .mobile-message-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .mobile-message-badge {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        
+        .mobile-message-badge.unread {
+            background: var(--mobile-accent);
+            color: white;
+        }
+        
+        .mobile-message-badge.read {
+            background: #e9ecef;
+            color: #6c757d;
+        }
+        
+        .mobile-message-time {
+            font-size: 0.7rem;
+            color: #6c757d;
+        }
+        
+        /* Mobile Bottom Bar */
+        .mobile-bottom-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: calc(70px + env(safe-area-inset-bottom));
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            z-index: 1000;
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        
+        .mobile-bottom-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            text-decoration: none;
+            font-size: 0.7rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            padding: 0.5rem;
+            border-radius: 12px;
+            min-width: 60px;
+            position: relative;
+        }
+        
+        .mobile-bottom-btn.active {
+            color: var(--mobile-primary);
+            background: rgba(0, 51, 102, 0.1);
+        }
+        
+        .mobile-bottom-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .mobile-bottom-btn i {
+            font-size: 1.3rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        /* Mobile Animations */
+        @keyframes mobile-fade-in-up {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes mobile-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .mobile-animate-fade-in {
+            animation: mobile-fade-in-up 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .mobile-animate-pulse {
+            animation: mobile-pulse 0.6s ease-in-out;
+        }
+        
+        /* Mobile Loading */
+        .mobile-loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .mobile-loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--mobile-light);
+            border-top: 4px solid var(--mobile-primary);
+            border-radius: 50%;
+            animation: mobile-spin 1s linear infinite;
+        }
+        
+        @keyframes mobile-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 375px) {
+            :root {
+                --mobile-spacing: 0.75rem;
+                --mobile-radius: 12px;
+            }
+            
+            .mobile-stats-grid {
+                gap: 0.5rem;
+            }
+            
+            .mobile-stat-card {
+                padding: 1rem;
+            }
+            
+            .mobile-recommendation-card {
+                flex: 0 0 260px;
+            }
+        }
+        
+        @media (max-width: 320px) {
+            .mobile-stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Dark mode support */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(135deg, #1a1a1a 0%, #2d3748 100%);
+            }
+            
+            .mobile-card, .mobile-stat-card, .mobile-recommendation-card {
+                background: #2d3748;
+                color: white;
+            }
+            
+            .mobile-card-header {
+                background: #4a5568;
+            }
+            
+            .mobile-bottom-bar {
+                background: rgba(45, 55, 72, 0.95);
+                border-top-color: rgba(255, 255, 255, 0.1);
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Mobile Header -->
+    <div class="mobile-dashboard-header">
+        <div class="mobile-user-info">
+            <div class="mobile-avatar">JD</div>
+            <div class="mobile-user-details">
+                <h6>John Doe</h6>
+                <small>VIP Member • 847 days</small>
+            </div>
+        </div>
+        <div class="mobile-header-actions">
+            <button class="mobile-header-btn" onclick="openMobileSearch()">
+                <i class="fas fa-search"></i>
+            </button>
+            <button class="mobile-header-btn" onclick="openMobileMessages()">
+                <i class="fas fa-envelope"></i>
+                <span class="mobile-notification-badge">3</span>
+            </button>
+            <button class="mobile-header-btn" onclick="openMobileMenu()">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Mobile Content -->
+    <div class="mobile-dashboard-content">
+        
+        <!-- Mobile Stats Grid -->
+        <div class="mobile-stats-grid mobile-animate-fade-in">
+            <div class="mobile-stat-card">
+                <div class="mobile-stat-icon">
+                    <i class="fas fa-shopping-cart"></i>
+                </div>
+                <div class="mobile-stat-value">47</div>
+                <div class="mobile-stat-label">Total Orders</div>
+                <div class="mobile-stat-change positive">
+                    <i class="fas fa-arrow-up"></i>
+                    <span>+3 this month</span>
+                </div>
+            </div>
+            
+            <div class="mobile-stat-card">
+                <div class="mobile-stat-icon" style="background: linear-gradient(45deg, var(--mobile-success), #34ce57);">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="mobile-stat-value">VIP</div>
+                <div class="mobile-stat-label">Member Tier</div>
+                <div class="mobile-stat-change positive">
+                    <i class="fas fa-crown"></i>
+                    <span>Elite Status</span>
+                </div>
+            </div>
+            
+            <div class="mobile-stat-card">
+                <div class="mobile-stat-icon" style="background: linear-gradient(45deg, var(--mobile-warning), #ffed4a);">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="mobile-stat-value">$2,847</div>
+                <div class="mobile-stat-label">Lifetime Value</div>
+                <div class="mobile-stat-change positive">
+                    <i class="fas fa-trending-up"></i>
+                    <span>+$156 this month</span>
+                </div>
+            </div>
+            
+            <div class="mobile-stat-card">
+                <div class="mobile-stat-icon" style="background: linear-gradient(45deg, var(--mobile-accent), #ff8e53);">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="mobile-stat-value">9</div>
+                <div class="mobile-stat-label">Days Since Order</div>
+                <div class="mobile-stat-change negative">
+                    <i class="fas fa-exclamation"></i>
+                    <span>Restock Soon</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Favorite Brands -->
+        <div class="mobile-card mobile-animate-fade-in">
+            <div class="mobile-card-header">
+                <h5 class="mobile-card-title">
+                    <i class="fas fa-heart"></i>
+                    Your Favorite Brands
+                </h5>
+            </div>
+            <div class="mobile-card-body">
+                <div class="mobile-brand-item">
+                    <div class="mobile-brand-icon">IG</div>
+                    <div class="mobile-brand-info">
+                        <div class="mobile-brand-name">IGET</div>
+                        <div class="mobile-brand-stats">$1,279.50 • 18 orders</div>
+                        <div class="mobile-brand-progress">
+                            <div class="mobile-brand-progress-bar" style="width: 45%;"></div>
+                        </div>
+                    </div>
+                    <div class="mobile-brand-percentage">45%</div>
+                </div>
+                
+                <div class="mobile-brand-item">
+                    <div class="mobile-brand-icon" style="background: linear-gradient(45deg, #ff6b35, #f7931e);">JJ</div>
+                    <div class="mobile-brand-info">
+                        <div class="mobile-brand-name">Just Juice</div>
+                        <div class="mobile-brand-stats">$797.30 • 12 orders</div>
+                        <div class="mobile-brand-progress">
+                            <div class="mobile-brand-progress-bar" style="width: 28%; background: linear-gradient(90deg, #ff6b35, #f7931e);"></div>
+                        </div>
+                    </div>
+                    <div class="mobile-brand-percentage">28%</div>
+                </div>
+                
+                <div class="mobile-brand-item">
+                    <div class="mobile-brand-icon" style="background: linear-gradient(45deg, #28a745, #20c997);">VU</div>
+                    <div class="mobile-brand-info">
+                        <div class="mobile-brand-name">Vuse</div>
+                        <div class="mobile-brand-stats">$427.15 • 8 orders</div>
+                        <div class="mobile-brand-progress">
+                            <div class="mobile-brand-progress-bar" style="width: 15%; background: linear-gradient(90deg, #28a745, #20c997);"></div>
+                        </div>
+                    </div>
+                    <div class="mobile-brand-percentage">15%</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Recommendations -->
+        <div class="mobile-card mobile-animate-fade-in">
+            <div class="mobile-card-header">
+                <h5 class="mobile-card-title">
+                    <i class="fas fa-magic"></i>
+                    Personalized for You
+                </h5>
+            </div>
+            <div class="mobile-card-body">
+                <div class="mobile-recommendations-scroll">
+                    <div class="mobile-recommendation-card">
+                        <img src="/images/iget-bar-plus.jpg" alt="IGET Bar Plus" class="mobile-recommendation-image" 
+                             onerror="this.style.background='linear-gradient(45deg, #f8f9fa, #e9ecef)'">
+                        <div class="mobile-recommendation-content">
+                            <h6 class="mobile-recommendation-title">IGET Bar Plus 6000 Puff - Berry Blast</h6>
+                            <p class="mobile-recommendation-reason">You order this every 12 days</p>
+                            <div class="mobile-recommendation-probability">
+                                <div class="mobile-probability-bar">
+                                    <div class="mobile-probability-fill" style="width: 92%;"></div>
+                                </div>
+                                <span class="mobile-probability-text">92%</span>
+                            </div>
+                            <button class="mobile-recommendation-btn" onclick="addToCart(1)">
+                                <i class="fas fa-cart-plus me-2"></i>Reorder Now
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mobile-recommendation-card">
+                        <img src="/images/iget-v3.jpg" alt="IGET V3.0" class="mobile-recommendation-image"
+                             onerror="this.style.background='linear-gradient(45deg, #667eea, #764ba2)'">
+                        <div class="mobile-recommendation-content">
+                            <h6 class="mobile-recommendation-title">IGET Bar Plus V3.0 10,000 Puff</h6>
+                            <p class="mobile-recommendation-reason">Trending in your brand</p>
+                            <div class="mobile-recommendation-probability">
+                                <div class="mobile-probability-bar">
+                                    <div class="mobile-probability-fill" style="width: 78%; background: linear-gradient(90deg, #667eea, #764ba2);"></div>
+                                </div>
+                                <span class="mobile-probability-text">HOT</span>
+                            </div>
+                            <button class="mobile-recommendation-btn">
+                                <i class="fas fa-fire me-2"></i>Try New Version
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mobile-recommendation-card">
+                        <img src="/images/just-juice-kiwi.jpg" alt="Just Juice Kiwi" class="mobile-recommendation-image"
+                             onerror="this.style.background='linear-gradient(45deg, #ff6b35, #f7931e)'">
+                        <div class="mobile-recommendation-content">
+                            <h6 class="mobile-recommendation-title">Just Juice Kiwifruit Berry Salt 30mg</h6>
+                            <p class="mobile-recommendation-reason">Perfect match for you</p>
+                            <div class="mobile-recommendation-probability">
+                                <div class="mobile-probability-bar">
+                                    <div class="mobile-probability-fill" style="width: 85%; background: linear-gradient(90deg, #ff6b35, #f7931e);"></div>
+                                </div>
+                                <span class="mobile-probability-text">85%</span>
+                            </div>
+                            <button class="mobile-recommendation-btn">
+                                <i class="fas fa-heart me-2"></i>Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile Messages -->
+        <div class="mobile-card mobile-animate-fade-in">
+            <div class="mobile-card-header">
+                <h5 class="mobile-card-title">
+                    <i class="fas fa-envelope"></i>
+                    Recent Messages
+                </h5>
+            </div>
+            <div class="mobile-card-body" style="padding: 0;">
+                <div class="mobile-message-item">
+                    <div class="mobile-message-icon">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="mobile-message-content">
+                        <h6 class="mobile-message-title">🔥 IGET Bar Plus V3.0 Available!</h6>
+                        <p class="mobile-message-text">The latest IGET Bar Plus V3.0 with 10,000 puffs is now in stock. Perfect for your IGET preference!</p>
+                        <div class="mobile-message-meta">
+                            <span class="mobile-message-badge unread">New</span>
+                            <span class="mobile-message-time">2h ago</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mobile-message-item">
+                    <div class="mobile-message-icon" style="background: linear-gradient(45deg, var(--mobile-warning), #ffed4a);">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="mobile-message-content">
+                        <h6 class="mobile-message-title">⚡ Restock Reminder</h6>
+                        <p class="mobile-message-text">It's been 9 days since your last order. Your usual IGET Bar Plus Berry Blast is available.</p>
+                        <div class="mobile-message-meta">
+                            <span class="mobile-message-badge unread">Urgent</span>
+                            <span class="mobile-message-time">5h ago</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mobile-message-item">
+                    <div class="mobile-message-icon" style="background: linear-gradient(45deg, #8e44ad, #9b59b6);">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div class="mobile-message-content">
+                        <h6 class="mobile-message-title">🎉 VIP Exclusive Offer</h6>
+                        <p class="mobile-message-text">15% off your next Just Juice order. Exclusive VIP member benefit expires in 48 hours.</p>
+                        <div class="mobile-message-meta">
+                            <span class="mobile-message-badge read">VIP</span>
+                            <span class="mobile-message-time">1d ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    <!-- Mobile Bottom Bar -->
+    <div class="mobile-bottom-bar">
+        <a href="/" class="mobile-bottom-btn active">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="/browse" class="mobile-bottom-btn">
+            <i class="fas fa-th-large"></i>
+            <span>Browse</span>
+        </a>
+        <a href="/search" class="mobile-bottom-btn">
+            <i class="fas fa-search"></i>
+            <span>Search</span>
+        </a>
+        <a href="/cart" class="mobile-bottom-btn">
+            <i class="fas fa-shopping-cart"></i>
+            <span>Cart</span>
+            <span class="mobile-notification-badge">3</span>
+        </a>
+        <a href="/menu" class="mobile-bottom-btn">
+            <i class="fas fa-user"></i>
+            <span>Account</span>
+        </a>
+    </div>
+    
+    <!-- Loading Overlay (hidden by default) -->
+    <div class="mobile-loading-overlay" style="display: none;">
+        <div class="mobile-loading-spinner"></div>
+    </div>
+    
+    <script>
+        // Mobile Dashboard JavaScript
+        class MobileDashboard {
+            constructor() {
+                this.init();
+            }
+            
+            init() {
+                this.setupTouchOptimizations();
+                this.setupAnimations();
+                this.setupHapticFeedback();
+                this.startRealTimeUpdates();
+                console.log('📱 Mobile Dashboard Ready for 70% mobile traffic');
+            }
+            
+            setupTouchOptimizations() {
+                // Prevent double-tap zoom
+                let lastTouchEnd = 0;
+                document.addEventListener('touchend', (event) => {
+                    const now = (new Date()).getTime();
+                    if (now - lastTouchEnd <= 300) {
+                        event.preventDefault();
+                    }
+                    lastTouchEnd = now;
+                }, false);
+                
+                // Optimize scroll performance
+                document.addEventListener('touchstart', () => {}, { passive: true });
+                document.addEventListener('touchmove', () => {}, { passive: true });
+            }
+            
+            setupAnimations() {
+                // Intersection Observer for animations
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.style.animationPlayState = 'running';
+                        }
+                    });
+                }, { threshold: 0.1 });
+                
+                document.querySelectorAll('.mobile-animate-fade-in').forEach(el => {
+                    observer.observe(el);
+                });
+            }
+            
+            setupHapticFeedback() {
+                // Add haptic feedback for buttons
+                document.querySelectorAll('button, .mobile-bottom-btn, .mobile-stat-card').forEach(el => {
+                    el.addEventListener('touchstart', () => {
+                        if (navigator.vibrate) {
+                            navigator.vibrate(10); // Light haptic feedback
+                        }
+                    });
+                });
+            }
+            
+            startRealTimeUpdates() {
+                // Simulate real-time updates
+                setInterval(() => {
+                    this.updateNotificationBadges();
+                    this.updateStats();
+                }, 30000);
+            }
+            
+            updateNotificationBadges() {
+                // Randomly update message count
+                if (Math.random() < 0.1) {
+                    const badges = document.querySelectorAll('.mobile-notification-badge');
+                    badges.forEach(badge => {
+                        const currentCount = parseInt(badge.textContent) || 0;
+                        badge.textContent = currentCount + 1;
+                        badge.classList.add('mobile-animate-pulse');
+                        setTimeout(() => {
+                            badge.classList.remove('mobile-animate-pulse');
+                        }, 600);
+                    });
+                }
+            }
+            
+            updateStats() {
+                // Simulate stats updates
+                const statChanges = document.querySelectorAll('.mobile-stat-change');
+                statChanges.forEach(change => {
+                    if (Math.random() < 0.05) {
+                        change.classList.add('mobile-animate-pulse');
+                        setTimeout(() => {
+                            change.classList.remove('mobile-animate-pulse');
+                        }, 600);
+                    }
+                });
+            }
+        }
+        
+        // Global functions for mobile interactions
+        function openMobileSearch() {
+            console.log('📱 Opening mobile search');
+            showMobileNotification('Search opened', 'info');
+        }
+        
+        function openMobileMessages() {
+            console.log('📱 Opening mobile messages');
+            showMobileNotification('Messages opened', 'info');
+        }
+        
+        function openMobileMenu() {
+            console.log('📱 Opening mobile menu');
+            showMobileNotification('Menu opened', 'info');
+        }
+        
+        function addToCart(productId) {
+            console.log('📱 Adding product to cart:', productId);
+            showMobileNotification('Added to cart!', 'success');
+            
+            // Update cart badge
+            const cartBadges = document.querySelectorAll('.mobile-bottom-btn .mobile-notification-badge');
+            cartBadges.forEach(badge => {
+                const currentCount = parseInt(badge.textContent) || 0;
+                badge.textContent = currentCount + 1;
+                badge.classList.add('mobile-animate-pulse');
+                setTimeout(() => badge.classList.remove('mobile-animate-pulse'), 600);
+            });
+        }
+        
+        function showMobileNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 90px;
+                left: 50%;
+                transform: translateX(-50%) translateY(-100%);
+                background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : '#007bff'};
+                color: white;
+                padding: 0.75rem 1.5rem;
+                border-radius: 25px;
+                font-size: 0.9rem;
+                font-weight: 500;
+                z-index: 9999;
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(-50%) translateY(0)';
+            }, 100);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(-50%) translateY(-100%)';
+                setTimeout(() => notification.remove(), 300);
+            }, 2500);
+            
+            // Haptic feedback
+            if (navigator.vibrate) {
+                navigator.vibrate(type === 'success' ? [10, 50, 10] : 20);
+            }
+        }
+        
+        // Initialize mobile dashboard
+        document.addEventListener('DOMContentLoaded', () => {
+            new MobileDashboard();
+        });
+        
+        // Handle orientation change
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => {
+                window.scrollTo(0, 0);
+            }, 100);
+        });
+        
+        // Progressive Web App features
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').then(() => {
+                    console.log('📱 PWA Service Worker registered');
+                });
+            });
+        }
+    </script>
+</body>
+</html>

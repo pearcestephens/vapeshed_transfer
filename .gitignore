@@ -1,0 +1,8 @@
+/vendor/
+/node_modules/
+.env
+uploads/
+cache/
+*.log
+ARCHIVE_MISC_20251002/
+ARCHIVE/

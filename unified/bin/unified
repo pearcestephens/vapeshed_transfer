@@ -1,0 +1,19 @@
+#!/usr/bin/env php
+<?php
+declare(strict_types=1);
+use Unified\Bootstrap;
+use Unified\Transfer\{BalancerEngine,BalancerService,TransferRepository};
+require_once __DIR__.'/../src/Bootstrap.php';
+Bootstrap::init();
+$db = Unified\Bootstrap::get('db');
+$logger = Unified\Bootstrap::get('logger');
+$cmd = $argv[1] ?? '';
+
+switch($cmd){
+    case 'run:balancer':
+        $service = new BalancerService(new BalancerEngine(), new TransferRepository($db), $logger);
+        $out = $service->executeDryRun();
+        echo json_encode($out, JSON_PRETTY_PRINT)."\n"; break;
+    default:
+        fwrite(STDERR, "Unknown command\n"); exit(1);
+}

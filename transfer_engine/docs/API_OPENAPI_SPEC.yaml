@@ -1,0 +1,67 @@
+openapi: 3.0.3
+info:
+  title: Vapeshed Transfer Intelligence API
+  version: 0.1.0
+  description: Candidate extraction, matching, and feature pipeline endpoints (draft)
+paths:
+  /api/candidates/{id}:
+    get:
+      summary: Get product candidate by ID
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Candidate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Candidate'
+        '404': { description: Not found }
+  /api/candidates/{id}/matches:
+    get:
+      summary: List proposed/accepted matches for candidate
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Matches
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/CandidateMatch' }
+components:
+  schemas:
+    Candidate:
+      type: object
+      properties:
+        candidate_id: { type: string }
+        url: { type: string }
+        product_title: { type: string }
+        brand: { type: string }
+        variant: { type: string }
+        price_detected: { type: number }
+        currency: { type: string }
+        change_count: { type: integer }
+        platform: { type: string }
+        available: { type: boolean }
+        on_sale: { type: boolean }
+    CandidateMatch:
+      type: object
+      properties:
+        match_id: { type: string }
+        candidate_id: { type: string }
+        sku_id: { type: string }
+        confidence: { type: number }
+        method: { type: string }
+        status: { type: string }

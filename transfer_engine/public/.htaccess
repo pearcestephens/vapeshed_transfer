@@ -4,6 +4,12 @@ RewriteEngine On
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 
+# API direct routing for module endpoints
+RewriteRule ^api/transfer/?$ api/transfer.php [QSA,L]
+RewriteRule ^api/transfer/(.*)$ api/transfer.php?action=$1 [QSA,L]
+RewriteRule ^api/pricing/?$ api/pricing.php [QSA,L]
+RewriteRule ^api/pricing/(.*)$ api/pricing.php?action=$1 [QSA,L]
+
 # Route everything through index.php
 RewriteRule ^(.*)$ index.php [QSA,L]
 

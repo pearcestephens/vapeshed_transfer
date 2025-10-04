@@ -1,6 +1,6 @@
 <?php
 /**
- * Transfer History Tab - Enhanced with HistoryReadModel
+ * Pricing History Tab - Enhanced with HistoryReadModel
  */
 
 use Unified\Persistence\ReadModels\HistoryReadModel;
@@ -9,18 +9,18 @@ use Unified\Support\UiKernel;
 $logger = UiKernel::logger();
 $historyModel = new HistoryReadModel($logger);
 
-// Get recent transfer history with guardrail traces
-$history = $historyModel->enrichedHistory('transfer', 20);
+// Get recent pricing history with guardrail traces
+$history = $historyModel->enrichedHistory('pricing', 20);
 ?>
 
-<div class="transfer-history">
+<div class="pricing-history">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5><i class="fas fa-history me-2"></i>Recent Transfer History</h5>
+        <h5><i class="fas fa-history me-2"></i>Recent Pricing History</h5>
         <div class="btn-group btn-group-sm">
-            <button class="btn btn-outline-light" onclick="transfer.refreshHistory()">
+            <button class="btn btn-outline-light" onclick="pricing.refreshHistory()">
                 <i class="fas fa-sync"></i> Refresh
             </button>
-            <button class="btn btn-outline-light" onclick="transfer.exportHistory()">
+            <button class="btn btn-outline-light" onclick="pricing.exportHistory()">
                 <i class="fas fa-download"></i> Export
             </button>
         </div>
@@ -29,39 +29,50 @@ $history = $historyModel->enrichedHistory('transfer', 20);
     <?php if (empty($history)): ?>
         <div class="alert alert-info">
             <i class="fas fa-info-circle me-2"></i>
-            No transfer history available. Execute some transfers to see them here.
+            No pricing history available. Apply some pricing proposals to see them here.
         </div>
     <?php else: ?>
         <div class="history-timeline">
             <?php foreach ($history as $item): ?>
-                <div class="history-item transfer-item transfer-status-<?= strtolower($item['status']) ?>">
+                <div class="history-item pricing-rule pricing-band-<?= strtolower($item['band'] ?? 'medium') ?>">
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="history-details flex-grow-1">
                             <div class="fw-bold">
-                                Transfer #<?= htmlspecialchars($item['proposal_id']) ?>
+                                Pricing #<?= htmlspecialchars($item['proposal_id']) ?>
                                 <?= statusBadge($item['status'], [
-                                    'completed' => 'success',
-                                    'failed' => 'danger', 
+                                    'applied' => 'success',
+                                    'rejected' => 'danger', 
                                     'pending' => 'warning',
-                                    'cancelled' => 'secondary'
+                                    'auto_applied' => 'info'
                                 ]) ?>
+                                
+                                <?php if (!empty($item['band'])): ?>
+                                    <span class="badge bg-secondary ms-2"><?= ucfirst($item['band']) ?> Impact</span>
+                                <?php endif; ?>
                             </div>
                             
                             <div class="history-meta text-muted small mt-1">
                                 <i class="fas fa-clock me-1"></i>
                                 <?= date('M j, Y g:i A', strtotime($item['created_at'])) ?>
                                 
-                                <?php if (!empty($item['outlet_from']) && !empty($item['outlet_to'])): ?>
+                                <?php if (!empty($item['product_count'])): ?>
                                     <span class="ms-3">
-                                        <i class="fas fa-arrow-right me-1"></i>
-                                        <?= htmlspecialchars($item['outlet_from']) ?> → <?= htmlspecialchars($item['outlet_to']) ?>
+                                        <i class="fas fa-tag me-1"></i>
+                                        <?= number_format($item['product_count']) ?> products
                                     </span>
                                 <?php endif; ?>
                                 
-                                <?php if (!empty($item['items_count'])): ?>
+                                <?php if (!empty($item['price_change'])): ?>
                                     <span class="ms-3">
-                                        <i class="fas fa-boxes me-1"></i>
-                                        <?= number_format($item['items_count']) ?> items
+                                        <i class="fas fa-chart-line me-1"></i>
+                                        <?= $item['price_change'] > 0 ? '+' : '' ?><?= number_format($item['price_change'], 1) ?>%
+                                    </span>
+                                <?php endif; ?>
+                                
+                                <?php if (!empty($item['value_impact'])): ?>
+                                    <span class="ms-3">
+                                        <i class="fas fa-dollar-sign me-1"></i>
+                                        $<?= number_format($item['value_impact']) ?> impact
                                     </span>
                                 <?php endif; ?>
                             </div>
@@ -88,6 +99,15 @@ $history = $historyModel->enrichedHistory('transfer', 20);
                                 </div>
                             <?php endif; ?>
                             
+                            <?php if (!empty($item['rule_name'])): ?>
+                                <div class="pricing-rule-info mt-2">
+                                    <small class="text-primary">
+                                        <i class="fas fa-cogs me-1"></i>
+                                        Rule: <?= htmlspecialchars($item['rule_name']) ?>
+                                    </small>
+                                </div>
+                            <?php endif; ?>
+                            
                             <?php if (!empty($item['notes'])): ?>
                                 <div class="history-notes mt-2">
                                     <small class="text-muted">
@@ -102,24 +122,32 @@ $history = $historyModel->enrichedHistory('transfer', 20);
                         <div class="history-actions ms-3">
                             <div class="btn-group btn-group-sm">
                                 <button class="btn btn-outline-light" 
-                                        onclick="transfer.viewDetails('<?= $item['proposal_id'] ?>')" 
+                                        onclick="pricing.viewDetails('<?= $item['proposal_id'] ?>')" 
                                         title="View Details">
                                     <i class="fas fa-eye"></i>
                                 </button>
                                 
                                 <?php if (!empty($item['guardrail_traces'])): ?>
                                     <button class="btn btn-outline-info" 
-                                            onclick="transfer.viewGuardrails('<?= $item['proposal_id'] ?>')" 
+                                            onclick="pricing.viewGuardrails('<?= $item['proposal_id'] ?>')" 
                                             title="View Guardrail Results">
                                         <i class="fas fa-shield-alt"></i>
                                     </button>
                                 <?php endif; ?>
                                 
-                                <?php if ($item['status'] === 'failed'): ?>
+                                <?php if ($item['status'] === 'rejected' && !empty($item['rule_name'])): ?>
                                     <button class="btn btn-outline-warning" 
-                                            onclick="transfer.retry('<?= $item['proposal_id'] ?>')" 
-                                            title="Retry Transfer">
+                                            onclick="pricing.reapply('<?= $item['proposal_id'] ?>')" 
+                                            title="Reapply Pricing">
                                         <i class="fas fa-redo"></i>
+                                    </button>
+                                <?php endif; ?>
+                                
+                                <?php if ($item['status'] === 'applied'): ?>
+                                    <button class="btn btn-outline-danger" 
+                                            onclick="pricing.rollback('<?= $item['proposal_id'] ?>')" 
+                                            title="Rollback Pricing">
+                                        <i class="fas fa-undo"></i>
                                     </button>
                                 <?php endif; ?>
                             </div>
@@ -130,7 +158,7 @@ $history = $historyModel->enrichedHistory('transfer', 20);
         </div>
         
         <div class="text-center mt-3">
-            <button class="btn btn-outline-light" onclick="transfer.loadMoreHistory()">
+            <button class="btn btn-outline-light" onclick="pricing.loadMoreHistory()">
                 <i class="fas fa-chevron-down me-1"></i>Load More History
             </button>
         </div>

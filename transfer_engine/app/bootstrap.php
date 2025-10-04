@@ -180,6 +180,9 @@ function config(string $key, $default = null) {
     if ($val !== null) return $val;
     // Fall back to UI metadata bundles
     global $__uiModules, $__uiApp, $__uiDb;
+    if ($key === 'modules') {
+        return $__uiModules ?: $default;
+    }
     if (str_starts_with($key, 'modules.')) {
         $path = explode('.', $key); // modules, slug, rest...
         $slug = $path[1] ?? null; $sub = $path[2] ?? null;
@@ -251,25 +254,6 @@ function formatDateTime($datetime, string $format = 'Y-m-d H:i:s'): string {
     return date($format, is_numeric($datetime) ? $datetime : strtotime($datetime));
 }
 
-/**
- * Generate status badge HTML
- */
-function statusBadge(string $status): string {
-    $badges = [
-        'pending' => 'warning',
-        'approved' => 'info',
-        'executed' => 'success',
-        'failed' => 'danger',
-        'rejected' => 'danger',
-        'completed' => 'success',
-        'active' => 'success',
-        'inactive' => 'secondary',
-        'blocked' => 'danger'
-    ];
-    
-    $class = $badges[$status] ?? 'secondary';
-    return "<span class=\"badge badge-{$class}\">" . ucfirst($status) . "</span>";
-}
 
 /**
  * Escape HTML
@@ -318,6 +302,22 @@ function correlationId(): string {
     return $cid;
 }
 function logger(): UnifiedLogger { global $__uiLogger; return $__uiLogger; }
+
+// Include view helpers
+if (file_exists(PUBLIC_PATH . '/views/helpers/stats.php')) {
+    require_once PUBLIC_PATH . '/views/helpers/stats.php';
+}
+
+// Log module request entry (if in module context)
+if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/modules/') !== false) {
+    $module = basename(dirname($_SERVER['REQUEST_URI']));
+    logger()->info('ui.module.entry', [
+        'module' => $module,
+        'cid' => correlationId(),
+        'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? 'unknown',
+        'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
+    ]);
+}
 
 // Mark application as loaded
 define('APP_LOADED', true);

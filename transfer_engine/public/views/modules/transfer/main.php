@@ -1,48 +1,19 @@
+<!-- Module CSS -->
+<link rel="stylesheet" href="<?php echo asset('css/modules/transfer.css'); ?>">
+
 <!-- Stats Row -->
 <div class="row mb-4">
     <div class="col-md-3">
-        <div class="stat-card">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
-                <i class="fas fa-clock"></i>
-            </div>
-            <div class="stat-details">
-                <div class="stat-label">Pending Transfers</div>
-                <div class="stat-value"><?php echo formatNumber($stats['pending']); ?></div>
-            </div>
-        </div>
+        <?= statCard('Pending Transfers', formatNumber($stats['pending']), 'clock', '#8b5cf6', 'pending'); ?>
     </div>
     <div class="col-md-3">
-        <div class="stat-card">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="stat-details">
-                <div class="stat-label">Executed Today</div>
-                <div class="stat-value"><?php echo formatNumber($stats['today']); ?></div>
-            </div>
-        </div>
+        <?= statCard('Executed Today', formatNumber($stats['today']), 'check-circle', '#10b981', 'today'); ?>
     </div>
     <div class="col-md-3">
-        <div class="stat-card">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <div class="stat-details">
-                <div class="stat-label">Failed Transfers</div>
-                <div class="stat-value"><?php echo formatNumber($stats['failed']); ?></div>
-            </div>
-        </div>
+        <?= statCard('Failed Transfers', formatNumber($stats['failed']), 'exclamation-triangle', '#f59e0b', 'failed'); ?>
     </div>
     <div class="col-md-3">
-        <div class="stat-card">
-            <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
-                <i class="fas fa-list"></i>
-            </div>
-            <div class="stat-details">
-                <div class="stat-label">Total (7d)</div>
-                <div class="stat-value"><?php echo formatNumber($stats['total']); ?></div>
-            </div>
-        </div>
+        <?= statCard('Total (7d)', formatNumber($stats['total']), 'list', '#3b82f6', 'total'); ?>
     </div>
 </div>
 
@@ -94,3 +65,6 @@
     </div>
     
 </div>
+
+<!-- Module JS -->
+<script src="<?php echo asset('js/modules/transfer.js'); ?>"></script>

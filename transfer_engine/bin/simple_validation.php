@@ -9,11 +9,15 @@
  * Usage: php bin/simple_validation.php
  */
 
-// Direct database connection with fallback chain
-$host = getenv('DB_HOST') ?: (defined('DB_HOST') ? DB_HOST : '127.0.0.1');
-$user = getenv('DB_USER') ?: (defined('DB_USERNAME') ? DB_USERNAME : (defined('DB_USER') ? DB_USER : 'jcepnzzkmj'));
-$pass = getenv('DB_PASS') ?: (defined('DB_PASSWORD') ? DB_PASSWORD : (defined('DB_PASS') ? DB_PASS : 'wprKh9Jq63'));
-$db   = getenv('DB_NAME') ?: (defined('DB_DATABASE') ? DB_DATABASE : (defined('DB_NAME') ? DB_NAME : 'jcepnzzkmj'));
+// Direct database connection via environment variables only (no hard-coded secrets)
+$host = getenv('DB_HOST') ?: '127.0.0.1';
+$user = getenv('DB_USER') ?: '';
+$pass = getenv('DB_PASS') ?: '';
+$db   = getenv('DB_NAME') ?: '';
+
+if ($user === '' || $db === '') {
+    fwrite(STDERR, CLR_YELLOW . "[warn] DB_USER/DB_NAME not set in environment. Set DB_* env vars to run validation.\n" . CLR_RESET);
+}
 
 // ANSI colors
 const CLR_GREEN  = "\033[32m";

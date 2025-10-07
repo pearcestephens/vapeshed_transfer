@@ -11,19 +11,14 @@
  */
 declare(strict_types=1);
 
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+require_once dirname(__DIR__, 2) . '/app/bootstrap.php';
 
-// Handle preflight requests
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
-}
+use Unified\Support\Api;
 
-require_once __DIR__ . '/../../config/bootstrap.php';
-require_once __DIR__ . '/../includes/auth.php';
+Api::initJson();
+Api::applyCors('GET, OPTIONS');
+Api::handleOptionsPreflight();
+Api::enforceGetRateLimit('stats');
 
 /**
  * Dashboard Statistics Service
@@ -522,27 +517,18 @@ class ApiResponse
 // ============================================
 
 try {
-    // Verify authentication
-    if (!isAuthenticated()) {
-        ApiResponse::error('Unauthorized', 401);
+    // Verify authentication using unified auth service
+    if (!function_exists('auth') || !auth()->check()) {
+    \Unified\Support\Api::error('UNAUTHORIZED', 'Unauthorized', 401);
     }
     
     // Only allow GET requests
     if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-        ApiResponse::error('Method not allowed', 405);
+    \Unified\Support\Api::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
     }
     
-    // Initialize database connection
-    $db = new PDO(
-        "mysql:host=localhost;dbname=transfer_engine;charset=utf8mb4",
-        "root",
-        "",
-        [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false
-        ]
-    );
+    // Initialize database connection via unified container
+    $db = db();
     
     // Initialize service
     $statsService = new DashboardStatsService($db);
@@ -551,17 +537,13 @@ try {
     $stats = $statsService->getAllStats();
     
     // Send response
-    ApiResponse::success($stats);
+    \Unified\Support\Api::ok($stats);
     
 } catch (PDOException $e) {
     error_log("Database error in stats API: " . $e->getMessage());
-    ApiResponse::error('Database connection failed', 503, [
-        'type' => 'database_error'
-    ]);
+    \Unified\Support\Api::error('DB_ERROR', 'Database connection failed', 503, ['type' => 'database_error']);
     
 } catch (Exception $e) {
     error_log("Error in stats API: " . $e->getMessage());
-    ApiResponse::error('Internal server error', 500, [
-        'type' => 'server_error'
-    ]);
+    \Unified\Support\Api::error('INTERNAL_ERROR', 'Internal server error', 500, ['type' => 'server_error']);
 }

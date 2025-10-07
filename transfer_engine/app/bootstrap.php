@@ -42,8 +42,13 @@ spl_autoload_register(function ($class) {
     $relative = str_replace('\\', '/', $class) . '.php';
     $candidates = [
         APP_PATH . '/' . $relative,     // legacy app path
-        SRC_PATH . '/' . $relative      // unified src path
+        SRC_PATH . '/' . $relative      // unified src path (namespaced directory)
     ];
+    // Fallback: allow classes under namespace 'Unified\\' to resolve to src/ without the 'Unified/' prefix
+    if (str_starts_with($relative, 'Unified/')) {
+        $alt = substr($relative, strlen('Unified/'));
+        $candidates[] = SRC_PATH . '/' . $alt; // e.g., Unified/Support/Config.php -> src/Support/Config.php
+    }
     foreach ($candidates as $file) {
         if (file_exists($file)) {
             require_once $file;
@@ -92,6 +97,8 @@ if (session_status() === PHP_SESSION_NONE) {
         'cookie_lifetime' => 7200
     ]);
 }
+// Generate CSRF token (for optional enforcement in APIs)
+if (empty($_SESSION['_csrf'])) { $_SESSION['_csrf'] = bin2hex(random_bytes(16)); }
 
 // ============================================
 // SHARED SERVICES REGISTRY

@@ -15,18 +15,18 @@ header('Connection: keep-alive');
 header('X-Accel-Buffering: no');
 
 // CORS (development only)
-if (Config::read('neuro.unified.environment', 'production') === 'development') {
+if (Config::get('neuro.unified.environment', 'production') === 'development') {
     header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Headers: Cache-Control');
 }
 
-// Throttling and capacity controls
-$MAX_LIFETIME_SEC = 60;        // hard cap per connection
-$STATUS_PERIOD_SEC = 5;        // status cadence
-$HEARTBEAT_PERIOD_SEC = 15;    // heartbeat cadence
-$RETRY_MS = 3000;              // client backoff hint
-$MAX_GLOBAL = 200;             // soft global cap
-$MAX_PER_IP = 3;               // per-IP cap
+// Throttling and capacity controls (configurable)
+$MAX_LIFETIME_SEC   = (int) Config::get('neuro.unified.sse.max_lifetime_sec', 60);
+$STATUS_PERIOD_SEC  = (int) Config::get('neuro.unified.sse.status_period_sec', 5);
+$HEARTBEAT_PERIOD_SEC = (int) Config::get('neuro.unified.sse.heartbeat_period_sec', 15);
+$RETRY_MS           = (int) Config::get('neuro.unified.sse.retry_ms', 3000);
+$MAX_GLOBAL         = (int) Config::get('neuro.unified.sse.max_global', 200);
+$MAX_PER_IP         = (int) Config::get('neuro.unified.sse.max_per_ip', 3);
 
 // Topic filters (client can request subset: e.g., topics=status,transfer)
 $topics = array_filter(array_map('trim', explode(',', $_GET['topics'] ?? 'status,heartbeat,transfer,pricing,system')));

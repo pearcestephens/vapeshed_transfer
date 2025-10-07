@@ -11,19 +11,19 @@
  */
 declare(strict_types=1);
 
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+require_once dirname(__DIR__, 2) . '/app/bootstrap.php';
 
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
+use Unified\Support\Api;
+
+Api::initJson();
+Api::applyCors('GET, OPTIONS');
+Api::handleOptionsPreflight();
+Api::enforceGetRateLimit('modules');
+// Optional GET token enforcement via Authorization: Bearer
+if (!empty($_SERVER['HTTP_AUTHORIZATION']) && preg_match('/^Bearer\s+(.+)$/i', (string)$_SERVER['HTTP_AUTHORIZATION'], $m)) {
+    $_SERVER['HTTP_X_API_TOKEN'] = $m[1];
 }
-
-require_once __DIR__ . '/../../config/bootstrap.php';
-require_once __DIR__ . '/../includes/auth.php';
-require_once __DIR__ . '/stats.php'; // Reuse ApiResponse class
+Api::enforceOptionalToken('neuro.unified.ui.api_token', ['HTTP_X_API_TOKEN','HTTP_AUTHORIZATION']);
 
 /**
  * Module Status Service
@@ -429,27 +429,18 @@ class ModuleStatusService
 // ============================================
 
 try {
-    // Verify authentication
-    if (!isAuthenticated()) {
-        ApiResponse::error('Unauthorized', 401);
+    // Verify authentication using unified auth service
+    if (!function_exists('auth') || !auth()->check()) {
+    \Unified\Support\Api::error('UNAUTHORIZED', 'Unauthorized', 401);
     }
     
     // Only allow GET requests
     if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-        ApiResponse::error('Method not allowed', 405);
+    \Unified\Support\Api::error('METHOD_NOT_ALLOWED', 'Method not allowed', 405);
     }
     
-    // Initialize database connection
-    $db = new PDO(
-        "mysql:host=localhost;dbname=transfer_engine;charset=utf8mb4",
-        "root",
-        "",
-        [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_EMULATE_PREPARES => false
-        ]
-    );
+    // Initialize database connection via unified container
+    $db = db();
     
     // Initialize service
     $moduleService = new ModuleStatusService($db);
@@ -461,20 +452,16 @@ try {
     $status = $moduleService->getModuleStatus($moduleName);
     
     // Send response
-    ApiResponse::success($status);
+    \Unified\Support\Api::ok($status);
     
 } catch (InvalidArgumentException $e) {
-    ApiResponse::error($e->getMessage(), 400);
+    \Unified\Support\Api::error('BAD_REQUEST', $e->getMessage(), 400);
     
 } catch (PDOException $e) {
     error_log("Database error in modules API: " . $e->getMessage());
-    ApiResponse::error('Database connection failed', 503, [
-        'type' => 'database_error'
-    ]);
+    \Unified\Support\Api::error('DB_ERROR', 'Database connection failed', 503, ['type' => 'database_error']);
     
 } catch (Exception $e) {
     error_log("Error in modules API: " . $e->getMessage());
-    ApiResponse::error('Internal server error', 500, [
-        'type' => 'server_error'
-    ]);
+    \Unified\Support\Api::error('INTERNAL_ERROR', 'Internal server error', 500, ['type' => 'server_error']);
 }

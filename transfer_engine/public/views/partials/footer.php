@@ -44,11 +44,30 @@
                         <span>SSE:</span>
                         <span class="badge badge-secondary" id="sse-status">Connecting...</span>
                     </div>
+                    <div class="d-flex justify-content-between align-items-center mb-1" id="smoke-row" style="display:none;">
+                        <span>Smoke:</span>
+                        <div>
+                            <a href="/api/smoke_summary.php" class="text-muted small mr-2" target="_blank" rel="noopener noreferrer" title="Open JSON summary">View</a>
+                            <span class="badge badge-secondary" id="smoke-status">—</span>
+                        </div>
+                    </div>
                     <div class="d-flex justify-content-between">
                         <span>Last Updated:</span>
                         <span class="text-muted" id="last-updated"><?php echo date('H:i'); ?></span>
                     </div>
                 </div>
+                <?php $__footerProposals = (bool) (config('neuro.unified.ui.footer_proposals_enabled', false)); ?>
+                <?php if ($__footerProposals): ?>
+                <div class="small mt-2" id="footer-proposals">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span>Proposals Today:</span>
+                        <div>
+                            <span class="badge badge-info mr-1" id="transfers-today" title="Transfers today">T: 0</span>
+                            <span class="badge badge-info" id="pricing-today" title="Pricing today">P: 0</span>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
             </div>
         </div>
         
@@ -64,6 +83,16 @@
                 <a href="<?php echo url('/terms'); ?>" class="text-muted">Terms of Service</a>
             </div>
         </div>
+        <?php if ((bool) (config('neuro.unified.ui.show_diagnostics', false))): ?>
+            <div class="mt-3 p-2 bg-secondary rounded small">
+                <div class="d-flex flex-wrap align-items-center text-light">
+                    <span class="mr-3">CID: <code><?php echo e(correlationId()); ?></code></span>
+                    <span class="mr-3">CSRF: <code><?php echo substr((string)($_SESSION['_csrf'] ?? ''),0,8); ?>…</code></span>
+                    <span class="mr-3">SSE Caps: <code>G=<?php echo (int)config('neuro.unified.sse.max_global',200); ?>/IP=<?php echo (int)config('neuro.unified.sse.max_per_ip',3); ?></code></span>
+                    <span class="mr-3">SSE Cadence: <code>S=<?php echo (int)config('neuro.unified.sse.status_period_sec',5); ?>/H=<?php echo (int)config('neuro.unified.sse.heartbeat_period_sec',15); ?></code></span>
+                </div>
+            </div>
+        <?php endif; ?>
     </div>
 </footer>
 
@@ -173,3 +202,109 @@ $(document).ready(() => {
     });
 });
 </script>
+
+<?php $__smokeEnabled = (bool) (config('neuro.unified.ui.smoke_summary_enabled', false)); ?>
+<?php if ($__smokeEnabled): ?>
+<script>
+(function(){
+    const row = document.getElementById('smoke-row');
+    const badge = document.getElementById('smoke-status');
+    if (!row || !badge) return;
+    row.style.display = '';
+
+    function setBadge(state, meta){
+        badge.classList.remove('badge-success','badge-danger','badge-warning','badge-secondary');
+        let cls = 'badge-secondary';
+        if (state === 'GREEN') cls = 'badge-success';
+        else if (state === 'RED') cls = 'badge-danger';
+        else if (state === 'SKIPPED') cls = 'badge-warning';
+        badge.classList.add(cls);
+        badge.textContent = state;
+        if (meta && meta.counts){
+            badge.title = `G:${meta.counts.GREEN||0} R:${meta.counts.RED||0} S:${meta.counts.SKIPPED||0}`;
+        }
+    }
+
+    async function fetchSmoke(){
+        try{
+            const res = await fetch('/api/smoke_summary.php', { headers: { 'Accept':'application/json' } });
+            if (!res.ok){ setBadge('SKIPPED'); return; }
+            const json = await res.json();
+            if (!json || json.success !== true){ setBadge('SKIPPED'); return; }
+            const last = (json.data && json.data.last) ? json.data.last : null;
+            const status = (last && typeof last.status === 'string') ? last.status.toUpperCase() : 'SKIPPED';
+            setBadge(status, json.data || {});
+        }catch(e){ setBadge('SKIPPED'); }
+    }
+
+    fetchSmoke();
+    setInterval(fetchSmoke, 60000);
+})();
+</script>
+<?php endif; ?>
+
+<?php $__sseHealthPoll = (bool) (config('neuro.unified.ui.sse_health_poll_enabled', false)); ?>
+<?php if ($__sseHealthPoll): ?>
+<script>
+(function(){
+    const badge = document.getElementById('sse-status');
+    if (!badge) return;
+
+    function setSseBadge(state){
+        // Do not override hard error state
+        if (badge.classList.contains('badge-danger') && badge.textContent === 'Error') return;
+        badge.classList.remove('badge-success','badge-warning','badge-danger','badge-secondary');
+        if (state === 'green') { badge.classList.add('badge-success'); badge.textContent = 'Connected'; }
+        else if (state === 'yellow') { badge.classList.add('badge-warning'); badge.textContent = 'Busy'; }
+        else if (state === 'red') { badge.classList.add('badge-danger'); badge.textContent = 'Busy'; }
+        else { badge.classList.add('badge-secondary'); }
+    }
+
+    async function poll(){
+        try {
+            const res = await fetch('/health_sse.php', { headers: { 'Accept':'application/json' }, cache: 'no-store' });
+            if (!res.ok) return;
+            const json = await res.json();
+            if (!json || json.success !== true || !json.data) return;
+            const status = json.data.status || 'green';
+            setSseBadge(status);
+        } catch (e) { /* silent */ }
+    }
+
+    // Initial and periodic poll (every 90s)
+    poll();
+    setInterval(poll, 90000);
+})();
+</script>
+<?php endif; ?>
+
+<?php if ($__footerProposals): ?>
+<script>
+(function(){
+    const elT = document.getElementById('transfers-today');
+    const elP = document.getElementById('pricing-today');
+    if (!elT || !elP) return;
+
+    async function poll(){
+        try {
+            const [tr, pr] = await Promise.all([
+                fetch('/api/transfer.php?action=status', { headers: { 'Accept':'application/json' }, cache:'no-store' }),
+                fetch('/api/pricing.php?action=status', { headers: { 'Accept':'application/json' }, cache:'no-store' })
+            ]);
+            if (tr && tr.ok){
+                const j = await tr.json();
+                const t = (j && j.stats && typeof j.stats.today === 'number') ? j.stats.today : 0;
+                elT.textContent = 'T: ' + t;
+            }
+            if (pr && pr.ok){
+                const j2 = await pr.json();
+                const p = (j2 && j2.stats && typeof j2.stats.today === 'number') ? j2.stats.today : 0;
+                elP.textContent = 'P: ' + p;
+            }
+        } catch(e) { /* silent */ }
+    }
+    poll();
+    setInterval(poll, 120000);
+})();
+</script>
+<?php endif; ?>

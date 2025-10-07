@@ -20,6 +20,22 @@ final class Config
     {
         if (!self::$cache) {
             self::$cache = [
+                // Environment & Security (sane production defaults)
+                'neuro.unified.environment' => Env::get('APP_ENV', 'production'),
+                'neuro.unified.security.csrf_required' => (Env::get('CSRF_REQUIRED', 'false') === 'true'),
+                'neuro.unified.security.post_rate_limit_per_min' => (int) (Env::get('POST_RL_PER_MIN', '0') ?? '0'),
+                'neuro.unified.security.post_rate_burst' => (int) (Env::get('POST_RL_BURST', '0') ?? '0'),
+                // CORS allowlist can be provided via env CORS_ALLOWLIST (comma-separated). If not, allow staff domains by default.
+                'neuro.unified.security.cors_allowlist' => (function () {
+                    $envList = Env::get('CORS_ALLOWLIST');
+                    if (is_string($envList) && $envList !== '') {
+                        return array_filter(array_map('trim', explode(',', $envList)));
+                    }
+                    return [
+                        'https://staff.vapeshed.co.nz',
+                        'https://www.staff.vapeshed.co.nz'
+                    ];
+                })(),
                 'neuro.unified.balancer.target_dsr' => 10,
                 'neuro.unified.balancer.daily_line_cap' => 500,
                 'neuro.unified.matching.min_confidence' => 0.82,

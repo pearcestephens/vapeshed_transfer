@@ -9,20 +9,28 @@ require_once dirname(__DIR__, 2) . '/app/bootstrap.php';
 use Unified\Persistence\ReadModels\TransferReadModel;
 use Unified\Support\UiKernel;
 use Unified\Services\TransferService;
+use Unified\Support\Config;
+use Unified\Support\Api;
+use Unified\Support\Validator;
 
-// Set JSON response headers
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE');
-header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Correlation-ID');
+// Standardized API hardening
+Api::initJson();
+Api::applyCors('GET, POST, PUT, DELETE, OPTIONS');
+Api::handleOptionsPreflight();
+Api::enforceCsrf();
+// Lightweight GET rate limit (group: transfer)
+Api::enforceGetRateLimit('transfer');
 
-// Handle preflight OPTIONS request
-if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-    http_response_code(200);
-    exit;
+// Optional token enforcement for read-only requests (GET) via Authorization: Bearer
+$__method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+if ($__method === 'GET') {
+    if (!empty($_SERVER['HTTP_AUTHORIZATION']) && preg_match('/^Bearer\s+(.+)$/i', (string)$_SERVER['HTTP_AUTHORIZATION'], $m)) {
+        $_SERVER['HTTP_X_API_TOKEN'] = $m[1];
+    }
+    Api::enforceOptionalToken('neuro.unified.ui.api_token', ['HTTP_X_API_TOKEN','HTTP_AUTHORIZATION']);
 }
 
-$method = $_SERVER['REQUEST_METHOD'];
+$method = $__method;
 // Determine action from query, PATH_INFO, or REQUEST_URI for subpath support
 $action = $_GET['action'] ?? null;
 if ($action === null) {
@@ -48,17 +56,13 @@ $logger = UiKernel::logger();
 
 // Simple RBAC: restrict POST actions to users with engine.execute permission
 $auth = function_exists('auth') ? auth() : null;
+// Optional CSRF enforcement
+$csrfRequired = (bool) (Config::get('neuro.unified.security.csrf_required', false));
 if ($method === 'POST' && $auth && !$auth->hasPermission('engine.execute')) {
-    http_response_code(403);
-    echo json_encode([
-        'success' => false,
-        'error' => [
-            'code' => 'FORBIDDEN',
-            'message' => 'You do not have permission to perform this action.'
-        ]
-    ]);
-    exit;
+    Api::error('FORBIDDEN', 'You do not have permission to perform this action.', 403);
 }
+// Optional POST rate limiting (group: transfer)
+Api::enforcePostRateLimit('transfer');
 
 try {
     $readModel = new TransferReadModel($logger);
@@ -104,29 +108,28 @@ try {
             
         case 'GET:calculate':
         case 'POST:calculate':
-            $fromOutlet = $_GET['from'] ?? null;
-            $toOutlet = $_GET['to'] ?? null;
-            $productId = $_GET['product'] ?? null;
-            $quantity = intval($_GET['quantity'] ?? 1);
-            
-            $params = [
-                'from' => $_GET['from'] ?? null,
-                'to' => $_GET['to'] ?? null,
-                'product' => $_GET['product'] ?? null,
-                'quantity' => (int)($_GET['quantity'] ?? 1)
-            ];
+            $fromOutlet = isset($_GET['from']) ? (int)$_GET['from'] : null;
+            $toOutlet = isset($_GET['to']) ? (int)$_GET['to'] : null;
+            $productId = isset($_GET['product']) ? (int)$_GET['product'] : null;
+            $quantity = isset($_GET['quantity']) ? (int)$_GET['quantity'] : 1;
+            // Validate minimal presence and sensible ranges
+            if ($fromOutlet === null || $toOutlet === null || $productId === null) {
+                Api::error('MISSING_PARAMS', 'from, to, and product are required', 400);
+            }
+            try {
+                Validator::intRange($fromOutlet, 1, 2147483647, 'from');
+                Validator::intRange($toOutlet, 1, 2147483647, 'to');
+                Validator::intRange($productId, 1, 2147483647, 'product');
+                Validator::intRange($quantity, 1, 100000, 'quantity');
+            } catch (\InvalidArgumentException $ex) {
+                Api::error('INVALID_PARAMS', $ex->getMessage(), 400);
+            }
+            $params = [ 'from' => $fromOutlet, 'to' => $toOutlet, 'product' => $productId, 'quantity' => $quantity ];
             $response = [ 'success' => true, 'data' => $service->calculate($params, correlationId()) ];
             break;
             
         default:
-            http_response_code(404);
-            $response = [
-                'success' => false,
-                'error' => [
-                    'code' => 'NOT_FOUND',
-                    'message' => "Endpoint $method:$path not found"
-                ]
-            ];
+            Api::error('NOT_FOUND', "Endpoint $method:$path not found", 404);
     }
     
 } catch (Exception $e) {
@@ -136,14 +139,7 @@ try {
         'trace' => $e->getTraceAsString()
     ]);
     
-    http_response_code(500);
-    $response = [
-        'success' => false,
-        'error' => [
-            'code' => 'INTERNAL_ERROR',
-            'message' => 'An internal error occurred'
-        ]
-    ];
+    Api::error('INTERNAL_ERROR', 'An internal error occurred', 500);
 }
-
-echo json_encode($response, JSON_PRETTY_PRINT);
+// Preserve existing payload shapes for backward compatibility
+Api::respond($response);

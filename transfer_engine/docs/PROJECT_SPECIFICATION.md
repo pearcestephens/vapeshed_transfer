@@ -624,6 +624,7 @@ This section defines the concrete request/response envelopes for the public dash
 - Headers:
   - `Content-Type: application/json` on responses and JSON POSTs.
   - `X-Correlation-ID` propagated from the UI; logged server-side for tracing.
+  - `X-CSRF-Token` required on POST when CSRF is enabled (see 48.5).
 - Envelope: all responses follow `{ success: boolean, data|stats|error, meta? }`.
 - Errors: `{ success:false, error:{ code, message, details? }, request_id? }` with 4xx/5xx status codes.
 
@@ -706,8 +707,14 @@ Contracts & Semantics:
 
 ### 48.5 RBAC & CSRF (Forward Plan)
 - RBAC: POST endpoints already check a coarse-grained permission (`engine.execute`, `pricing.execute`) if an auth service is present.
-- CSRF: To be enforced in M20 by including a CSRF token header/form field validated server-side.
+- CSRF: Optional enforcement is available now behind config key `neuro.unified.security.csrf_required` (default false). When enabled, clients must send `X-CSRF-Token` header (or `_csrf` form field) matching the session token.
 - Rate Limiting: SSE connection rate and POST action throttles to be added in M20.
+Supporting APIs:
+- `GET https://staff.vapeshed.co.nz/transfer-engine/api/session.php` → `{ success:true, data:{ csrf_token, correlation_id, ts } }` for headless clients to fetch the CSRF token and correlation id.
+Config Keys (security):
+- `neuro.unified.security.csrf_required` (bool, default false)
+- `neuro.unified.security.post_rate_limit_per_min` (int, default 0 → disabled)
+- `neuro.unified.security.post_rate_burst` (int, default 0)
 
 ### 48.6 Compatibility Guarantees
 - Existing clients can call `/api/<name>/<action>` or `/api/<name>.php?action=<action>` interchangably during migration.
@@ -741,6 +748,13 @@ Recommended Nginx/Cloudways settings (infrastructure):
 Observability:
 - Over-capacity rejections are logged with counts; consider shipping these to centralized logs.
 - Add a lightweight health probe in future work to expose current lock counts.
+Tunables (Config Keys):
+- `neuro.unified.sse.max_lifetime_sec` (default 60)
+- `neuro.unified.sse.status_period_sec` (default 5)
+- `neuro.unified.sse.heartbeat_period_sec` (default 15)
+- `neuro.unified.sse.retry_ms` (default 3000)
+- `neuro.unified.sse.max_global` (default 200)
+- `neuro.unified.sse.max_per_ip` (default 3)
 
 ## 50. Service Adapters Contract (API Integration Seam)
 
@@ -769,5 +783,62 @@ Rules:
 Migration Plan:
 - Replace stub returns with real domain operations incrementally (persistence first, then queue/worker integration).
 - Add minimal unit tests for adapters (shape + logging) as part of CI before enabling writes.
+
+
+## 51. Verification & Smoke (Operational)
+
+Purpose: Provide a quick, repeatable check that public HTTP endpoints and SSE are reachable and that response envelopes match the documented contracts.
+
+Artifacts:
+- `bin/http_smoke.php` — lightweight smoke harness that can operate in two modes:
+  - Include mode (default, no web server): directly includes `public/api/*.php`, `health.php`, and `health_sse.php` and validates that JSON envelopes contain `success: true`.
+  - HTTP mode (set `SMOKE_BASE_URL`): performs real HTTP GETs to the same endpoints and attempts a short SSE probe.
+
+Usage (HTTP mode recommended on deployed environments):
+- Base URL examples:
+  - https://staff.vapeshed.co.nz/transfer-engine
+
+Run:
+```
+SMOKE_BASE_URL=https://staff.vapeshed.co.nz/transfer-engine php bin/http_smoke.php
+```
+Optional POST checks (staging only):
+```
+SMOKE_POST=1 SMOKE_BASE_URL=https://staff.vapeshed.co.nz/transfer-engine php bin/http_smoke.php
+```
+This will fetch a CSRF token from `https://staff.vapeshed.co.nz/transfer-engine/api/session.php` and send safe POSTs (no-op stubs) to `transfer:execute` and `pricing:apply`.
+
+Checks performed:
+- GET https://staff.vapeshed.co.nz/transfer-engine/api/transfer.php?action=status → expects `{ success: true, stats: {...} }`
+- GET https://staff.vapeshed.co.nz/transfer-engine/api/pricing.php?action=status → expects `{ success: true, stats: {...} }`
+- GET https://staff.vapeshed.co.nz/transfer-engine/health.php → expects HTTP 200 and JSON `checks.db_ok=true`
+- GET https://staff.vapeshed.co.nz/transfer-engine/health_sse.php → expects HTTP 200 and JSON `{ success:true, data:{global, per_ip} }`
+- GET https://staff.vapeshed.co.nz/transfer-engine/sse.php?topics=status,heartbeat → reads a small chunk; ok if it contains `event:` or `retry:`
+
+Exit codes:
+- 0 on success (GREEN), 1 on any failure (RED). Output is a concise JSON summary with per-check results and timestamp.
+
+Notes:
+- The SSE probe is conservative and does not maintain a long connection; it is only intended to verify basic reachability and payload shape.
+- Include mode is for local/offline verification and may not reflect production middleware (CORS, auth). Prefer HTTP mode in staging/production.
+429 handling:
+- When POST rate-limiting triggers, APIs return HTTP 429 with header `Retry-After: <seconds>` and an error envelope `{ code: 'RATE_LIMITED' }`.
+
+Diagnostics panel (optional):
+- UI can expose a minimal non-sensitive diagnostics strip in the footer when `neuro.unified.ui.show_diagnostics=true`.
+- Shows: correlation id, CSRF short hash, SSE caps and cadence.
+- Smoke summary API (optional): `GET https://staff.vapeshed.co.nz/transfer-engine/api/smoke_summary.php`
+  - Enabled when `neuro.unified.ui.smoke_summary_enabled=true`
+  - Optional token: set `neuro.unified.ui.smoke_summary_token` and provide via `?token=...` or header `X-SMOKE-TOKEN`
+  - Response matches CLI summary (counts + last entry) for the last 50 log lines.
+  - Log path can be overridden via `neuro.unified.smoke.log_path` (default `storage/logs/smoke.jsonl`).
+
+Scheduled Smoke (optional):
+- Wrapper script: `bin/cron_http_smoke.sh`
+- Appends JSON lines to `storage/logs/smoke.jsonl` and emits a stderr notice when status != GREEN.
+- Example cron (every 5 minutes):
+  - SMOKE_BASE_URL=https://staff.vapeshed.co.nz/transfer-engine /usr/bin/bash /path/to/transfer_engine/bin/cron_http_smoke.sh >/dev/null 2>&1
+- Summary CLI: `php bin/smoke_summary.php` (reads `storage/logs/smoke.jsonl`, last 100 entries) for quick health overview.
+
 
 

@@ -4,6 +4,15 @@
  * Maps ?endpoint=... values to controller handlers and HTTP metadata.
  */
 return [
+    'admin/layout' => [
+        'methods' => ['GET'],
+        'handler' => 'Admin\\LayoutController@index',
+        'auth' => ['role' => 'admin'],
+    ],
+    'admin/assets/probe' => [
+        'methods' => ['GET'],
+        'handler' => 'Admin\\LayoutController@assetsProbe',
+    ],
     'admin/health/ping' => [
         'methods' => ['GET'],
         'handler' => 'Admin\\HealthController@ping',

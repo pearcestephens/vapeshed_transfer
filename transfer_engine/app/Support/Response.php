@@ -43,6 +43,19 @@ final class Response
         self::json($payload, $status, self::correlationHeaders());
     }
 
+    public static function html(string $content, int $status = 200, array $headers = []): void
+    {
+        http_response_code($status);
+        header('Content-Type: text/html; charset=utf-8');
+        header('X-Content-Type-Options: nosniff');
+
+        foreach (array_merge(self::correlationHeaders(), $headers) as $key => $value) {
+            header($key . ': ' . $value);
+        }
+
+        echo $content;
+    }
+
     private static function buildMeta(array $overrides = []): array
     {
         return array_merge([
@@ -58,7 +71,7 @@ final class Response
         return ['X-Correlation-ID' => self::correlationId()];
     }
 
-    private static function correlationId(): string
+    public static function correlationId(): string
     {
         if (!isset($GLOBALS['__correlation_id'])) {
             $incoming = $_SERVER['HTTP_X_CORRELATION_ID'] ?? null;
@@ -66,6 +79,8 @@ final class Response
                 ? trim($incoming)
                 : bin2hex(random_bytes(8));
         }
+
+        $_SERVER['X_CORRELATION_ID'] = $GLOBALS['__correlation_id'];
 
         return $GLOBALS['__correlation_id'];
     }

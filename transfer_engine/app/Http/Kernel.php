@@ -3,12 +3,13 @@ declare(strict_types=1);
 
 namespace App\Http;
 
-use App\Support\Logger;
-use App\Support\Response;
 use App\Http\Middleware\AuthenticationMiddleware;
+use App\Http\Middleware\CorrelationIdMiddleware;
 use App\Http\Middleware\CsrfMiddleware;
 use App\Http\Middleware\RateLimitMiddleware;
-use App\Http\Middleware\CorrelationIdMiddleware;
+use App\Http\Middleware\StaticBundleHeaders;
+use App\Support\Logger;
+use App\Support\Response;
 use Unified\Support\Env;
 
 final class Kernel
@@ -36,6 +37,17 @@ final class Kernel
 
     public function handle(): bool
     {
+        $uri = (string)($_SERVER['REQUEST_URI'] ?? '/');
+        if ($this->isStaticAsset($uri)) {
+            (new StaticBundleHeaders())->handle();
+
+            if ($this->serveStaticAsset($uri)) {
+                return true;
+            }
+
+            return false;
+        }
+
         $endpoint = $_GET['endpoint'] ?? null;
         if ($endpoint === null) {
             return false;
@@ -201,5 +213,59 @@ final class Kernel
 
         $config = require $path;
         return is_array($config) ? $config : [];
+    }
+
+    private function isStaticAsset(string $uri): bool
+    {
+        $path = explode('?', $uri, 2)[0];
+        return (bool)preg_match('#^/public/admin/assets/(app\.(css|js))$#', $path);
+    }
+
+    private function serveStaticAsset(string $uri): bool
+    {
+        $path = $this->resolveStaticPath($uri);
+        if ($path === null) {
+            return false;
+        }
+
+        $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
+        if ($method === 'HEAD') {
+            header('Content-Length: ' . filesize($path));
+            return true;
+        }
+
+        if ($method !== 'GET') {
+            Response::error('Method not allowed', 'METHOD_NOT_ALLOWED', ['uri' => $uri], 405);
+            return true;
+        }
+
+        readfile($path);
+        return true;
+    }
+
+    private function resolveStaticPath(string $uri): ?string
+    {
+        $path = explode('?', $uri, 2)[0];
+        $docRoot = rtrim((string)($_SERVER['DOCUMENT_ROOT'] ?? ''), '/');
+        if ($docRoot === '') {
+            $docRoot = dirname(__DIR__, 2);
+        }
+
+        $full = realpath($docRoot . $path);
+        $assetRoot = realpath($docRoot . '/public/admin/assets');
+
+        if ($full === false || $assetRoot === false) {
+            return null;
+        }
+
+        if (!str_starts_with($full, $assetRoot)) {
+            return null;
+        }
+
+        if (!is_file($full) || !is_readable($full)) {
+            return null;
+        }
+
+        return $full;
     }
 }

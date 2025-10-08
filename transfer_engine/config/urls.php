@@ -29,6 +29,17 @@ return [
         'handler' => 'Admin\\HealthController@bundle',
         'auth' => ['role' => 'admin'],
     ],
+    'admin/metrics/snapshot' => [
+        'methods' => ['GET'],
+        'handler' => 'Admin\\MetricsController@snapshot',
+        'auth' => ['role' => 'admin'],
+    ],
+    'admin/metrics/stream' => [
+        'methods' => ['GET'],
+        'handler' => 'Admin\\MetricsController@stream',
+        'auth' => ['role' => 'admin'],
+        'sse' => true,
+    ],
     'admin/traffic/summary' => [
         'methods' => ['GET'],
         'handler' => 'Admin\\TrafficController@summary',

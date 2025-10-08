@@ -8,6 +8,7 @@ use App\Http\Middleware\CorrelationIdMiddleware;
 use App\Http\Middleware\CsrfMiddleware;
 use App\Http\Middleware\RateLimitMiddleware;
 use App\Http\Middleware\StaticBundleHeaders;
+use App\Http\Middleware\TrafficRecorder;
 use App\Support\Logger;
 use App\Support\Response;
 use Unified\Support\Env;
@@ -37,6 +38,8 @@ final class Kernel
 
     public function handle(): bool
     {
+        $__t0 = microtime(true);
+        
         $uri = (string)($_SERVER['REQUEST_URI'] ?? '/');
         if ($this->isStaticAsset($uri)) {
             (new StaticBundleHeaders())->handle();
@@ -71,6 +74,15 @@ final class Kernel
         $this->runMiddleware($request, function (array $request) {
             return $this->dispatch($request);
         });
+
+        // Record traffic metrics after request completion
+        TrafficRecorder::record([
+            'method'    => $_SERVER['REQUEST_METHOD'] ?? 'GET',
+            'endpoint'  => $endpoint,
+            'status'    => http_response_code(),
+            'ms'        => (int)round((microtime(true) - $__t0) * 1000),
+            'bytes_out' => 0, // TODO: implement if needed
+        ]);
 
         return true;
     }

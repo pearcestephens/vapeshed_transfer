@@ -37,6 +37,7 @@
           <li role="none"><a role="menuitem" href="?endpoint=admin/health/phpinfo" data-nav="phpinfo">PHP Info</a></li>
         <?php endif; ?>
         <li role="none"><a role="menuitem" href="?endpoint=admin/http/one-click-check" data-nav="bundle-probe">Bundle Probe</a></li>
+        <li role="none"><a role="menuitem" href="?endpoint=admin/metrics/snapshot" data-nav="metrics">Metrics</a></li>
         <li role="none"><a role="menuitem" href="?endpoint=admin/logs/apache-error-tail" data-nav="logs">Logs Tail</a></li>
         <li class="divider" aria-hidden="true"></li>
         <li role="none"><a role="menuitem" href="?endpoint=config/probe" data-nav="config">Config Probe</a></li>
@@ -56,6 +57,10 @@
           <h2>Bundles</h2>
           <p><button class="btn" data-action="probe">Run Bundle Probe</button></p>
           <pre class="probe-output" aria-live="polite"></pre>
+        </article>
+        <article class="tile">
+          <h2>Live Traffic</h2>
+          <pre id="trafficMetrics" style="min-height:90px;margin:0;font-size:0.875rem;" aria-live="polite">Connecting to metrics stream...</pre>
         </article>
       </section>
     </main>

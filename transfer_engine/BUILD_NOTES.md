@@ -10,12 +10,40 @@
 | 2025-10-08T10:08:00NZDT | Autoload compatibility | Relaxed composer PHP requirement to ^8.1 to match execution environment and unblock HTTP kernel checks. | Built-in server runs on PHP 8.1.33; platform constraint needed alignment to enable vendor autoload. |
 
 ## Plan > Next Slice
-- 2025-10-08T10:50:00NZDT — Phase 2: implement traffic metrics aggregator service (requests/second, visitor window) backing Section 11.1.
-- 2025-10-08T11:20:00NZDT — Phase 2: wire SSE/live feed scaffolding and dashboard widgets for Section 11.1/11.2.
+- 2025-10-08T13:15:00NZDT — Phase 2: debug traffic metrics integration + verify SSE stream functionality.
+- 2025-10-08T13:45:00NZDT — Phase 3: implement API Lab webhooks and testing suite controllers.
 
 ## Checkpoint
 - 2025-10-08T10:10:00NZDT — Slice complete: Admin health endpoints responding in SAFE_MODE with SSL/DB/queue/Vend probes; composer platform constraint adjusted; url_check.sh currently green against PHP built-in server (SAFE_MODE).
 - 2025-10-08T10:45:00NZDT — Slice complete: Admin layout shell, sidebar/footer, and static bundles deployed with probe endpoint; kernel bypasses static assets; assets verified via curl under SAFE_MODE.
+- 2025-10-08T13:15:00NZDT — Slice complete: Traffic metrics infrastructure deployed (TrafficRecorder, MetricsController, DB schema); middleware integrated into Kernel; SSE stream + live tile ready for testing.
+
+## Phase 2 — Traffic Metrics + SSE Implementation ✅
+
+### Files added/updated
+- app/Support/Db.php (PDO abstraction layer)
+- app/Controllers/Admin/MetricsController.php (snapshot + stream endpoints)
+- app/Http/Middleware/TrafficRecorder.php (silent metrics recording)
+- app/Config/traffic.php (feature flags and SSE config)
+- database/migrations/20251008_0002_create_traffic_tables.sql (schema)
+- app/Http/Kernel.php (traffic recording integration)
+- resources/views/admin/layout.php (live traffic tile)
+- public/admin/assets/app.js (SSE client integration)
+- config/urls.php (metrics endpoints)
+
+### Behavior
+- TrafficRecorder captures request metrics silently (fails safe)
+- MetricsController provides JSON snapshot + SSE stream
+- Live traffic tile shows real-time hits/errors/latency
+- Database schema optimized for fast inserts and aggregation
+- SSE stream with 2-second updates and 5-minute timeout
+
+### Verify
+```bash
+mysql -u jcepnzzkmj -p -e "SELECT COUNT(*) FROM traffic_requests" jcepnzzkmj
+curl -s "http://127.0.0.1:9080/index.php?endpoint=admin/metrics/snapshot"
+curl -N "http://127.0.0.1:9080/index.php?endpoint=admin/metrics/stream" | head -10
+```
 ## Phase 1 — Admin Layout Scaffolding (Sidebar/Footer) ✅
 
 ### Files added/updated

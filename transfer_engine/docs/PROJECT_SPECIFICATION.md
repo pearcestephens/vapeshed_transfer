@@ -626,6 +626,7 @@ This section defines the concrete request/response envelopes for the public dash
   - `X-Correlation-ID` propagated from the UI; logged server-side for tracing.
   - `X-CSRF-Token` required on POST when CSRF is enabled (see 48.5).
 - Envelope: all responses follow `{ success: boolean, data|stats|error, meta? }`.
+- Meta block is guaranteed to expose `{ correlation_id, method, endpoint, path, ts, duration_ms }` for observability.
 - Errors: `{ success:false, error:{ code, message, details? }, request_id? }` with 4xx/5xx status codes.
 
 ### 48.2 Transfer API
@@ -708,13 +709,15 @@ Contracts & Semantics:
 ### 48.5 RBAC & CSRF (Forward Plan)
 - RBAC: POST endpoints already check a coarse-grained permission (`engine.execute`, `pricing.execute`) if an auth service is present.
 - CSRF: Optional enforcement is available now behind config key `neuro.unified.security.csrf_required` (default false). When enabled, clients must send `X-CSRF-Token` header (or `_csrf` form field) matching the session token.
-- Rate Limiting: SSE connection rate and POST action throttles to be added in M20.
+- Rate Limiting: Global defaults plus per-endpoint groups (pricing, transfer, history, traces, stats, modules, activity, smoke, unified, session) controlled via `neuro.unified.security.*` keys; override with environment variables such as `PRICING_GET_RL_PER_MIN`, `TRANSFER_POST_RL_PER_MIN`.
 Supporting APIs:
 - `GET https://staff.vapeshed.co.nz/transfer-engine/api/session.php` → `{ success:true, data:{ csrf_token, correlation_id, ts } }` for headless clients to fetch the CSRF token and correlation id.
-Config Keys (security):
+-Config Keys (security):
 - `neuro.unified.security.csrf_required` (bool, default false)
-- `neuro.unified.security.post_rate_limit_per_min` (int, default 0 → disabled)
-- `neuro.unified.security.post_rate_burst` (int, default 0)
+- `neuro.unified.security.get_rate_limit_per_min` / `get_rate_burst` (ints, defaults 120 / 30)
+- `neuro.unified.security.post_rate_limit_per_min` / `post_rate_burst` (ints, defaults 0 / 0)
+- `neuro.unified.security.groups.<group>.get_rate_limit_per_min` / `get_rate_burst`
+- `neuro.unified.security.groups.<group>.post_rate_limit_per_min` / `post_rate_burst`
 
 ### 48.6 Compatibility Guarantees
 - Existing clients can call `/api/<name>/<action>` or `/api/<name>.php?action=<action>` interchangably during migration.

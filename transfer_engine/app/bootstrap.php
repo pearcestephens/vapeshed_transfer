@@ -23,6 +23,9 @@ error_reporting(E_ALL);
 ini_set('display_errors', '0');
 ini_set('log_errors', '1');
 
+// Register global error handler after basic settings
+// Will be fully initialized after autoloader and logger setup
+
 // ============================================
 // PATH CONSTANTS
 // ============================================
@@ -64,6 +67,7 @@ spl_autoload_register(function ($class) {
 use Unified\Support\Config as UnifiedConfig;
 use Unified\Support\Logger as UnifiedLogger;
 use Unified\Support\Pdo as UnifiedPdo;
+use Unified\Support\ErrorHandler;
 
 UnifiedConfig::prime(); // prime unified key cache (neuro.unified.*)
 
@@ -85,6 +89,10 @@ if (file_exists($__uiDbPath)) { $__uiDb = require $__uiDbPath; }
 // Provide a unified logger instance for UI channel
 $__uiLogger = new UnifiedLogger('ui');
 UnifiedConfig::setLogger(new UnifiedLogger('config'));
+
+// Register global error handler with debug mode from config
+$debug = UnifiedConfig::get('neuro.unified.environment', 'production') === 'development';
+ErrorHandler::register(new UnifiedLogger('errors'), $debug);
 
 // ============================================
 // SESSION MANAGEMENT

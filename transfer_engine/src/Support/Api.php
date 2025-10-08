@@ -277,4 +277,180 @@ final class Api
             self::error('CSRF_TOKEN_MISMATCH', 'Invalid CSRF token', 419);
         }
     }
+
+    /**
+     * Validate and extract request JSON body
+     * 
+     * @return array Parsed JSON body
+     * @throws void Exits with error response if validation fails
+     */
+    public static function getJsonBody(): array
+    {
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        if ($method === 'GET' || $method === 'HEAD' || $method === 'OPTIONS') {
+            return [];
+        }
+        
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+        if (stripos($contentType, 'application/json') === false) {
+            self::error('INVALID_CONTENT_TYPE', 'Content-Type must be application/json', 400);
+        }
+        
+        $raw = file_get_contents('php://input');
+        if ($raw === false || $raw === '') {
+            return [];
+        }
+        
+        $body = json_decode($raw, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            self::error('INVALID_JSON', 'Request body contains invalid JSON: ' . json_last_error_msg(), 400);
+        }
+        
+        if (!is_array($body)) {
+            self::error('INVALID_JSON', 'Request body must be a JSON object', 400);
+        }
+        
+        return $body;
+    }
+
+    /**
+     * Apply comprehensive security headers
+     * 
+     * @param bool $enableHSTS Enable HTTP Strict Transport Security (default: true in production)
+     * @param bool $enableCSP Enable Content Security Policy (default: true)
+     */
+    public static function applySecurityHeaders(bool $enableHSTS = true, bool $enableCSP = true): void
+    {
+        $env = Config::get('neuro.unified.environment', 'production');
+        
+        // X-Frame-Options: Prevent clickjacking
+        header('X-Frame-Options: DENY');
+        
+        // X-Content-Type-Options: Prevent MIME sniffing
+        header('X-Content-Type-Options: nosniff');
+        
+        // X-XSS-Protection: Legacy XSS protection header
+        header('X-XSS-Protection: 1; mode=block');
+        
+        // Referrer-Policy: Limit referrer information
+        header('Referrer-Policy: strict-origin-when-cross-origin');
+        
+        // Permissions-Policy: Disable unnecessary browser features
+        header('Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=()');
+        
+        // HSTS: Enforce HTTPS (only in production with HTTPS)
+        if ($enableHSTS && $env === 'production' && !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') {
+            header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
+        }
+        
+        // Content Security Policy
+        if ($enableCSP) {
+            $csp = Config::get('neuro.unified.security.csp_header', null);
+            if ($csp === null) {
+                // Safe default CSP for API endpoints
+                $csp = "default-src 'none'; frame-ancestors 'none'; base-uri 'none'";
+            }
+            if ($csp !== '') {
+                header('Content-Security-Policy: ' . $csp);
+            }
+        }
+    }
+
+    /**
+     * Validate request method
+     * 
+     * @param string|array $allowedMethods Single method or array of allowed methods
+     * @throws void Exits with error response if method not allowed
+     */
+    public static function requireMethod($allowedMethods): void
+    {
+        $allowed = is_array($allowedMethods) ? $allowedMethods : [$allowedMethods];
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        
+        if (!in_array($method, $allowed, true)) {
+            header('Allow: ' . implode(', ', $allowed));
+            self::error('METHOD_NOT_ALLOWED', 'Method ' . $method . ' not allowed', 405);
+        }
+    }
+
+    /**
+     * Check if request is from internal network (for admin endpoints)
+     * 
+     * @param bool $strict If true, reject; if false, just return boolean
+     * @return bool True if internal, false otherwise
+     */
+    public static function isInternalRequest(bool $strict = false): bool
+    {
+        $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+        
+        // Internal IP ranges (RFC 1918 + localhost)
+        $internalRanges = [
+            '127.0.0.1',
+            '::1',
+            '/^10\./',
+            '/^172\.(1[6-9]|2[0-9]|3[01])\./',
+            '/^192\.168\./',
+        ];
+        
+        foreach ($internalRanges as $range) {
+            if ($range === $ip) {
+                return true;
+            }
+            if (strpos($range, '/') === 0 && preg_match($range, $ip)) {
+                return true;
+            }
+        }
+        
+        // Check allowlist from config
+        $allowlist = Config::get('neuro.unified.security.admin_ip_allowlist', '');
+        if (is_string($allowlist) && $allowlist !== '') {
+            $allowed = array_filter(array_map('trim', explode(',', $allowlist)));
+            if (in_array($ip, $allowed, true)) {
+                return true;
+            }
+        }
+        
+        if ($strict) {
+            self::error('FORBIDDEN', 'Access denied: Admin endpoint requires internal network access', 403);
+        }
+        
+        return false;
+    }
+
+    /**
+     * Log API request for audit trail
+     * 
+     * @param string $endpoint Endpoint identifier
+     * @param array $context Additional context data
+     */
+    public static function logRequest(string $endpoint, array $context = []): void
+    {
+        $logData = [
+            'timestamp' => date('c'),
+            'correlation_id' => \correlationId(),
+            'neuro' => [
+                'namespace' => 'unified',
+                'system' => 'vapeshed_transfer',
+                'environment' => Config::get('neuro.unified.environment', 'production'),
+                'version' => Config::get('neuro.unified.version', '2.0.0'),
+                'component' => 'api',
+            ],
+            'endpoint' => $endpoint,
+            'method' => $_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN',
+            'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown',
+            'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
+            'request_uri' => $_SERVER['REQUEST_URI'] ?? '',
+            'context' => $context
+        ];
+        
+        $logDir = defined('STORAGE_PATH') ? STORAGE_PATH . '/logs' : sys_get_temp_dir();
+        if (!is_dir($logDir)) {
+            @mkdir($logDir, 0775, true);
+        }
+        
+        $logFile = $logDir . '/api_access.log';
+        $line = json_encode($logData, JSON_UNESCAPED_SLASHES) . PHP_EOL;
+        @file_put_contents($logFile, $line, FILE_APPEND | LOCK_EX);
+    }
 }
+

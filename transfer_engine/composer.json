@@ -1,0 +1,19 @@
+{
+    "name": "vapeshed/transfer-engine",
+    "description": "Transfer Engine control panel with traffic monitoring and API lab",
+    "type": "project",
+    "require": {
+        "php": "^8.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "VapeshedTransfer\\": "src/"
+        }
+    },
+    "config": {
+        "platform": {
+            "php": "8.1.0"
+        }
+    }
+}

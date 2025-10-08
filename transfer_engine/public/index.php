@@ -29,12 +29,19 @@ if (session_status() === PHP_SESSION_NONE) {
 
 // Load configuration
 require_once __DIR__ . '/../config/bootstrap.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
-// Initialize application
-$app = new \App\Core\Application();
-
-// Apply security headers
+// Apply security headers early
 \App\Core\Security::applyHeaders();
+
+// Admin endpoint routing (Sections 11 & 12)
+$kernel = new \App\Http\Kernel();
+if ($kernel->handle()) {
+    return;
+}
+
+// Initialize legacy application stack
+$app = new \App\Core\Application();
 
 // Start routing
 $router = new \App\Core\Router();

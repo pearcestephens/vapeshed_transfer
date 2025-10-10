@@ -593,7 +593,7 @@ class LightspeedTesterController extends BaseController
             CURLOPT_TIMEOUT => 30,
             CURLOPT_CUSTOMREQUEST => $method,
             CURLOPT_HTTPHEADER => $headers,
-            CURLOPT_SSL_Verifypeer => false, // API Lab testing only
+            CURLOPT_SSL_VERIFYPEER => true, // Security: enforce TLS verification
             CURLOPT_USERAGENT => 'VapeShed-ApiLab-LightspeedTester/1.0'
         ]);
 

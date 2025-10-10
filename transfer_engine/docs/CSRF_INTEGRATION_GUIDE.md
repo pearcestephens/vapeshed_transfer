@@ -455,6 +455,160 @@ This is negligible compared to typical JSON payloads.
 
 ---
 
+## SSRF Protection in Admin Tools
+
+Starting in **Sprint 2 (PR #1)**, admin testing tools (WebhookLab, VendApiTester) include **SSRF defenses** using `EgressGuard`:
+
+### WebhookLabController SSRF Protection
+
+The webhook testing tool blocks dangerous URLs before making HTTP requests:
+
+```php
+use Unified\Security\EgressGuard;
+
+public function handle(): void
+{
+    $url = (string)($input['url'] ?? '');
+    
+    // Security: SSRF protection using EgressGuard
+    try {
+        EgressGuard::assertUrlAllowed($url);
+    } catch (\RuntimeException $e) {
+        Response::error(
+            'URL blocked by security policy',
+            'SSRF_BLOCKED',
+            ['url' => $url, 'reason' => $e->getMessage()],
+            403
+        );
+        return;
+    }
+    
+    // ... proceed with webhook request
+}
+```
+
+### VendTesterController SSRF Protection
+
+The Vend API tester validates the base URL from `VEND_BASE_URL` environment variable:
+
+```php
+use Unified\Security\EgressGuard;
+
+private function executeVendRequest(string $method, string $path, array $params, string $body): array
+{
+    $baseUrl = rtrim($this->getVendBaseUrl(), '/');
+    
+    // Security: SSRF protection - validate Vend base URL
+    try {
+        EgressGuard::assertUrlAllowed($baseUrl);
+    } catch (\RuntimeException $e) {
+        return [
+            'success' => false,
+            'error' => 'Vend base URL blocked by security policy: ' . $e->getMessage(),
+            'ssrf_blocked' => true,
+        ];
+    }
+    
+    // ... proceed with Vend API call
+}
+```
+
+### Blocked Address Ranges
+
+EgressGuard blocks 30+ CIDR ranges including:
+
+- **RFC1918 Private Networks**: `10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`
+- **Loopback**: `127.0.0.0/8`, `::1/128`
+- **Cloud Metadata**: `169.254.169.254/32` (AWS, Azure, GCP)
+- **Link-Local**: `169.254.0.0/16`, `fe80::/10`
+- **IPv6 Private**: `fc00::/7`, `fd00::/8`
+
+### Payload Size Limits
+
+Both controllers enforce **1MB payload/body limits** to prevent memory exhaustion:
+
+```php
+// WebhookLabController
+$payloadSize = strlen($payload);
+if ($payloadSize > 1024 * 1024) {
+    Response::error(
+        'Payload exceeds maximum size of 1MB',
+        'PAYLOAD_TOO_LARGE',
+        ['size' => $payloadSize, 'limit' => 1048576],
+        413
+    );
+    return;
+}
+
+// VendTesterController
+$bodySize = strlen($body);
+if ($bodySize > 1024 * 1024) {
+    Response::error(
+        'Request body exceeds maximum size of 1MB',
+        'BODY_TOO_LARGE',
+        ['size' => $bodySize, 'limit' => 1048576],
+        413
+    );
+    return;
+}
+```
+
+### Sensitive Header Redaction
+
+Authorization tokens are **redacted** in response logs to prevent leakage:
+
+```php
+private function redactSensitiveHeaders(array $headers): array
+{
+    $redacted = [];
+    $sensitiveKeys = ['authorization', 'x-api-key', 'x-auth-token', 'api-key', 'bearer'];
+
+    foreach ($headers as $key => $value) {
+        $lowerKey = strtolower((string)$key);
+        if (in_array($lowerKey, $sensitiveKeys, true) || str_contains($lowerKey, 'token')) {
+            $redacted[$key] = '***REDACTED***';
+        } else {
+            $redacted[$key] = $value;
+        }
+    }
+
+    return $redacted;
+}
+```
+
+### TLS Enforcement
+
+Both controllers use **CURLOPT_SSL_VERIFYPEER = true** to prevent MITM attacks:
+
+```php
+curl_setopt_array($ch, [
+    CURLOPT_URL => $url,
+    CURLOPT_SSL_VERIFYPEER => true, // Security: enforce TLS verification
+    CURLOPT_FOLLOWLOCATION => false, // Prevent redirect-based SSRF
+    // ...
+]);
+```
+
+### Testing SSRF Protection
+
+Run comprehensive SSRF tests:
+
+```bash
+vendor/bin/phpunit tests/Controllers/Admin/ApiLab/WebhookLabSSRFTest.php
+vendor/bin/phpunit tests/Controllers/Admin/ApiLab/VendTesterSSRFTest.php
+```
+
+Test coverage includes:
+- Private network blocking (10.x, 172.16.x, 192.168.x)
+- Cloud metadata blocking (169.254.169.254)
+- Localhost/loopback blocking (127.0.0.1, ::1)
+- IPv6 private address blocking (fc00::/7, fe80::/10)
+- Payload size limit enforcement
+- Sensitive header redaction
+- TLS verification enforcement
+
+---
+
 ## Quick Reference
 
 ### Import Statements

@@ -1,0 +1,4 @@
+body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 0; }
+.header { padding: 12px 16px; background: #0b3d91; color: #fff; }
+.sidebar { padding: 12px 16px; background: #f7f7f7; border-right: 1px solid #ddd; }
+.footer { padding: 12px 16px; background: #fafafa; border-top: 1px solid #eee; color: #777; }

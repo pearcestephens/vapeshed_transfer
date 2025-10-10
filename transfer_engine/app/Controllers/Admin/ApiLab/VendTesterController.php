@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controllers\Admin\ApiLab;
 
 use App\Support\Response;
+use Unified\Security\EgressGuard;
 
 /**
  * Vend API Tester - Section 12.2
@@ -95,6 +96,18 @@ final class VendTesterController
         $authCheck = $this->checkVendAuth();
         if (!$authCheck['valid']) {
             Response::error('Vend API credentials not configured', 'AUTH_ERROR', $authCheck, 401);
+            return;
+        }
+
+        // Security: enforce 1MB body size limit
+        $bodySize = strlen($body);
+        if ($bodySize > 1024 * 1024) {
+            Response::error(
+                'Request body exceeds maximum size of 1MB',
+                'BODY_TOO_LARGE',
+                ['size' => $bodySize, 'limit' => 1048576],
+                413
+            );
             return;
         }
 
@@ -193,6 +206,17 @@ final class VendTesterController
             return [
                 'success' => false,
                 'error' => 'Vend credentials not configured',
+            ];
+        }
+
+        // Security: SSRF protection - validate Vend base URL
+        try {
+            EgressGuard::assertUrlAllowed($baseUrl);
+        } catch (\RuntimeException $e) {
+            return [
+                'success' => false,
+                'error' => 'Vend base URL blocked by security policy: ' . $e->getMessage(),
+                'ssrf_blocked' => true,
             ];
         }
 

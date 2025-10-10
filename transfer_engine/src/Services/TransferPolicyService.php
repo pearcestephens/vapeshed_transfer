@@ -8,6 +8,7 @@ use Unified\Models\TransferOrder;
 use Unified\Repositories\SystemConfigRepository;
 use Unified\Repositories\TransferOrderRepository;
 use Unified\Support\Logger;
+use Unified\Services\Idempotency\IdempotencyKey;
 
 /**
  * TransferPolicyService
@@ -43,21 +44,32 @@ final class TransferPolicyService
     {
         $this->assertSignal($signal);
 
-        $safetyStockDays = (int)$this->config->get('transfers.safety_stock_days', 7);
-        $maxMoveQty = (int)$this->config->get('transfers.max_move_qty', 200);
+        // Global defaults
+        $globalSafetyDays = (int)$this->config->get('transfers.safety_stock_days', 7);
+        $globalMaxMoveQty = (int)$this->config->get('transfers.max_move_qty', 200);
         $autoCreate = (bool)$this->config->get('transfers.auto_create', false);
+        $duplicateWindowHours = (int)$this->config->get('transfers.duplicate_window_hours', 6);
 
         $storeId = $signal['store_id'];
         $sku = $signal['sku'];
-        $weeklyDemand = (float)$signal['predicted_weekly_demand'];
-        $onHand = (int)$signal['current_on_hand'];
+        $weeklyDemand = $this->finite((float)$signal['predicted_weekly_demand']);
+        $onHand = max(0, (int)$signal['current_on_hand']);
         $leadTime = max(1, (int)($signal['lead_time_days'] ?? 4));
         $horizon = max($leadTime, (int)($signal['forecast_horizon_days'] ?? 14));
-        $predictionConfidence = max(0.0, min(1.0, (float)($signal['prediction_confidence'] ?? 0.5)));
+        $predictionConfidence = $this->clamp01((float)($signal['prediction_confidence'] ?? 0.5));
 
-        $dailyDemand = $weeklyDemand / 7.0;
-        $safetyStockUnits = (int)ceil($dailyDemand * $safetyStockDays);
-        $oneWeekDemand = (int)ceil($weeklyDemand);
+        // Resolve overrides: SKU > Store > Global
+        $skuSafety = $this->config->get('transfers.overrides.sku.' . $sku . '.safety_stock_days');
+        $storeSafety = $this->config->get('transfers.overrides.store.' . $storeId . '.safety_stock_days');
+        $safetyStockDays = (int)($skuSafety ?? $storeSafety ?? $globalSafetyDays);
+
+        $skuMaxMove = $this->config->get('transfers.overrides.sku.' . $sku . '.max_move_qty');
+        $storeMaxMove = $this->config->get('transfers.overrides.store.' . $storeId . '.max_move_qty');
+        $maxMoveQty = max(1, (int)($skuMaxMove ?? $storeMaxMove ?? $globalMaxMoveQty));
+
+        $dailyDemand = $this->finite($weeklyDemand / 7.0);
+        $safetyStockUnits = (int)ceil(max(0.0, $dailyDemand) * max(0, $safetyStockDays));
+        $oneWeekDemand = (int)ceil(max(0.0, $weeklyDemand));
         $requiredUnits = max(0, $safetyStockUnits + $oneWeekDemand - $onHand);
 
         if ($requiredUnits <= 0) {
@@ -86,6 +98,18 @@ final class TransferPolicyService
         $priority = $this->determinePriority($quantity, $maxMoveQty, $confidence, $onHand);
         $sourceHub = $signal['source_hub'] ?? (string)$this->config->get('transfers.default_source_hub', 'HUB_MAIN');
 
+        // Optional duplicate window suppression: find similar open transfer in window
+        if ($persist && $this->duplicateWindowHit($storeId, $sku, $quantity, $duplicateWindowHours)) {
+            $this->logger->info('transfer.skip', [
+                'store_id' => $storeId,
+                'sku' => $sku,
+                'reason' => 'duplicate_window_hit',
+                'required_units' => $requiredUnits,
+                'on_hand' => $onHand,
+            ]);
+            return null;
+        }
+
         $reason = [
             'type' => 'forecast_replenishment',
             'window_days' => $horizon,
@@ -97,6 +121,7 @@ final class TransferPolicyService
                 'current_on_hand' => $onHand,
                 'reserved' => (int)($signal['reserved'] ?? 0),
             ],
+            'preview' => $persist ? false : true,
         ];
 
         $line = [
@@ -124,15 +149,29 @@ final class TransferPolicyService
             'lines' => [$line],
         ];
 
+        // Idempotency key
+        $idem = IdempotencyKey::fromSignal(
+            storeId: $storeId,
+            sku: $sku,
+            qty: $quantity,
+            horizonDays: $horizon,
+            safetyDays: $safetyStockDays,
+            sourceHub: $sourceHub,
+            purpose: 'transfer.create'
+        )->value();
+        $payload['idempotency_key'] = $idem;
+
         if ($persist) {
             $order = $this->orders->create($payload);
-            $this->logger->info('policy.transfer.created', [
+            $idemFlag = $order->transferId() === $payload['transfer_id'] ? 'first' : 'duplicate';
+            $this->logger->info('transfer.create', [
                 'transfer_id' => $order->transferId(),
                 'store_id' => $storeId,
                 'sku' => $sku,
-                'quantity' => $quantity,
+                'qty' => $quantity,
                 'priority' => $priority,
                 'confidence' => $confidence,
+                'idem' => $idemFlag,
             ]);
             return $order;
         }
@@ -154,9 +193,11 @@ final class TransferPolicyService
 
     private function calculateConfidence(float $predictionConfidence, int $horizonDays, int $leadTimeDays, int $safetyStockDays): float
     {
-        $horizonFactor = max(0.5, min(1.0, 14 / max(1, $horizonDays)));
-        $leadPenalty = max(0.5, min(1.0, ($safetyStockDays + 7) / max(1, $leadTimeDays + $safetyStockDays)));
-        $confidence = min(1.0, $predictionConfidence * $horizonFactor * $leadPenalty);
+        $horizonSafe = max(1, $horizonDays);
+        $horizonFactor = $this->clamp01(14 / $horizonSafe);
+        $leadDen = max(1, $leadTimeDays + max(0, $safetyStockDays));
+        $leadPenalty = $this->clamp01(($safetyStockDays + 7) / $leadDen);
+        $confidence = $this->clamp01($this->finite($predictionConfidence) * $horizonFactor * $leadPenalty);
         return round($confidence, 3);
     }
 
@@ -180,5 +221,64 @@ final class TransferPolicyService
     private function generateTransferId(string $storeId, string $sku): string
     {
         return sprintf('TR_%s_%s_%s', $storeId, $sku, strtoupper(bin2hex(random_bytes(3))));
+    }
+
+    private function clamp01(float $v): float
+    {
+        if (!is_finite($v)) {
+            return 0.0;
+        }
+        return max(0.0, min(1.0, $v));
+    }
+
+    private function finite(float $v): float
+    {
+        return is_finite($v) ? $v : 0.0;
+    }
+
+    private function duplicateWindowHit(string $storeId, string $sku, int $qty, int $windowHours): bool
+    {
+        // Lightweight scan via repository SQL (if exists); fallback to false to avoid blocking
+        try {
+            $pdo = new \ReflectionProperty($this->orders, 'pdo');
+            $pdo->setAccessible(true);
+            /** @var \PDO $conn */
+            $conn = $pdo->getValue($this->orders);
+
+            $driver = $conn->getAttribute(\PDO::ATTR_DRIVER_NAME);
+            if ($driver === 'sqlite') {
+                $hours = max(0, (int)$windowHours);
+                $sql = 'SELECT t.transfer_id, t.status, l.qty
+                        FROM transfer_orders t
+                        JOIN transfer_lines l ON l.transfer_id = t.transfer_id
+                        WHERE t.dest_store = :dest AND l.sku = :sku AND t.created_at >= datetime("now", :offset)
+                        ORDER BY t.created_at DESC LIMIT 1';
+                $stmt = $conn->prepare($sql);
+                $offset = sprintf('-%d hours', $hours);
+                $stmt->bindValue(':dest', $storeId);
+                $stmt->bindValue(':sku', $sku);
+                $stmt->bindValue(':offset', $offset);
+                $stmt->execute();
+            } else {
+                $stmt = $conn->prepare(
+                    'SELECT t.transfer_id, t.status, l.qty
+                     FROM transfer_orders t
+                     JOIN transfer_lines l ON l.transfer_id = t.transfer_id
+                     WHERE t.dest_store = ? AND l.sku = ? AND t.created_at >= (NOW() - INTERVAL ? HOUR)
+                     ORDER BY t.created_at DESC LIMIT 1'
+                );
+                $stmt->execute([$storeId, $sku, $windowHours]);
+            }
+            $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+            if ($row) {
+                $existingQty = (int)$row['qty'];
+                $delta = abs($existingQty - $qty);
+                $within10pct = $existingQty > 0 ? ($delta / $existingQty) <= 0.10 : ($qty <= 1);
+                return $within10pct;
+            }
+        } catch (\Throwable) {
+            // Best-effort; do not block creation on failure
+        }
+        return false;
     }
 }

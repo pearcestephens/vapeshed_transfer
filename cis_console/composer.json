@@ -1,0 +1,17 @@
+{
+  "name": "ecigdis/cis-console",
+  "description": "CIS Web Traffic & API Debug Console",
+  "type": "project",
+  "require": {
+    "php": ">=8.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "CisConsole\\": "app/"
+    }
+  },
+  "scripts": {
+    "lint": "find app -name '*.php' -print0 | xargs -0 -n1 -P4 php -l",
+    "phpcs": "vendor/bin/phpcs -q"
+  }
+}

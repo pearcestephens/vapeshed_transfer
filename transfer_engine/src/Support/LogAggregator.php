@@ -247,10 +247,8 @@ class LogAggregator
             ];
         }
         
-        // Read last N lines using tail command (faster than PHP for large files)
-        $command = sprintf('tail -n %d %s', $lines, escapeshellarg($file));
-        $output = [];
-        exec($command, $output);
+        // Read last N lines using safe PHP implementation (no exec())
+        $output = $this->tailFile($file, $lines);
         
         $entries = [];
         foreach ($output as $line) {
@@ -265,6 +263,61 @@ class LogAggregator
             'file' => $file,
             'count' => count($entries),
         ];
+    }
+    
+    /**
+     * Read last N lines from file using safe PHP implementation
+     * 
+     * This replaces exec('tail -n ...') for security and portability.
+     * Uses binary-safe file reading with fseek() to efficiently read from end.
+     * 
+     * @param string $filePath Absolute path to file
+     * @param int $lines Number of lines to read from end
+     * @param int $maxFileSize Maximum file size to process (default 20MB)
+     * @return array Array of lines (without trailing newlines)
+     */
+    private function tailFile(string $filePath, int $lines, int $maxFileSize = 20971520): array
+    {
+        // Security: Validate file size
+        $fileSize = filesize($filePath);
+        if ($fileSize === false) {
+            return []; // File not readable
+        }
+        if ($fileSize > $maxFileSize) {
+            // For very large files, only read last chunk
+            $fileSize = $maxFileSize;
+        }
+        if ($fileSize === 0) {
+            return []; // Empty file
+        }
+        
+        $handle = fopen($filePath, 'rb');
+        if ($handle === false) {
+            return []; // Could not open file
+        }
+        
+        // Seek to end of file (or max size limit)
+        $actualSize = min($fileSize, $maxFileSize);
+        fseek($handle, -$actualSize, SEEK_END);
+        
+        // Read chunk
+        $content = fread($handle, $actualSize);
+        fclose($handle);
+        
+        if ($content === false) {
+            return []; // Read error
+        }
+        
+        // Split into lines
+        $allLines = explode("\n", $content);
+        
+        // Remove empty last line if present (trailing newline)
+        if (end($allLines) === '') {
+            array_pop($allLines);
+        }
+        
+        // Return last N lines
+        return array_slice($allLines, -$lines);
     }
 
     /**

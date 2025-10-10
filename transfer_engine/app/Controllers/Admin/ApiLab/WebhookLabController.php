@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace App\Controllers\Admin\ApiLab;
 
 use App\Support\Response;
+use Unified\Security\EgressGuard;
 
 /**
  * Webhook Test Lab - Section 12.1
@@ -74,9 +75,28 @@ final class WebhookLabController
             return;
         }
 
-        // Security: restrict to safe URLs in development
-        if (!$this->isUrlSafe($url)) {
-            Response::error('URL not allowed', 'SECURITY_ERROR', ['url' => $url], 403);
+        // Security: SSRF protection using EgressGuard
+        try {
+            EgressGuard::assertUrlAllowed($url);
+        } catch (\RuntimeException $e) {
+            Response::error(
+                'URL blocked by security policy',
+                'SSRF_BLOCKED',
+                ['url' => $url, 'reason' => $e->getMessage()],
+                403
+            );
+            return;
+        }
+
+        // Security: enforce 1MB payload size limit
+        $payloadSize = strlen($payload);
+        if ($payloadSize > 1024 * 1024) {
+            Response::error(
+                'Payload exceeds maximum size of 1MB',
+                'PAYLOAD_TOO_LARGE',
+                ['size' => $payloadSize, 'limit' => 1048576],
+                413
+            );
             return;
         }
 
@@ -89,7 +109,7 @@ final class WebhookLabController
                 'url' => $url,
                 'method' => $method,
                 'payload' => $payload,
-                'headers' => $headers,
+                'headers' => $this->redactSensitiveHeaders($headers),
                 'timeout' => $timeout,
             ],
             'response' => $result,
@@ -110,27 +130,24 @@ final class WebhookLabController
         return $_POST;
     }
 
-    private function isUrlSafe(string $url): bool
+    /**
+     * Redacts sensitive headers (Authorization, API keys) from response logs.
+     */
+    private function redactSensitiveHeaders(array $headers): array
     {
-        // Allow relative URLs (internal endpoints)
-        if (str_starts_with($url, '/')) {
-            return true;
+        $redacted = [];
+        $sensitiveKeys = ['authorization', 'x-api-key', 'x-auth-token', 'api-key', 'bearer'];
+
+        foreach ($headers as $key => $value) {
+            $lowerKey = strtolower((string)$key);
+            if (in_array($lowerKey, $sensitiveKeys, true) || str_contains($lowerKey, 'token')) {
+                $redacted[$key] = '***REDACTED***';
+            } else {
+                $redacted[$key] = $value;
+            }
         }
 
-        // Allow localhost/127.0.0.1 in development
-        if (preg_match('#^https?://(localhost|127\.0\.0\.1)(:\d+)?(/.*)?$#i', $url)) {
-            return true;
-        }
-
-        // Allow specific external testing services
-        $allowedDomains = [
-            'httpbin.org',
-            'webhook.site',
-            'requestcatcher.com',
-        ];
-
-        $host = parse_url($url, PHP_URL_HOST);
-        return $host && in_array(strtolower($host), $allowedDomains, true);
+        return $redacted;
     }
 
     private function executeWebhook(string $url, string $method, string $payload, array $headers, int $timeout): array
@@ -143,7 +160,7 @@ final class WebhookLabController
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_TIMEOUT => $timeout,
                 CURLOPT_FOLLOWLOCATION => false,
-                CURLOPT_SSL_VERIFYPEER => false, // For local testing only
+                CURLOPT_SSL_VERIFYPEER => true, // Security: enforce TLS verification
                 CURLOPT_HEADER => true,
                 CURLOPT_NOBODY => false,
             ]);
@@ -180,7 +197,7 @@ final class WebhookLabController
                 'success' => true,
                 'http_code' => $httpCode,
                 'content_type' => $contentType,
-                'headers' => $responseHeaders,
+                'headers' => $this->redactSensitiveHeaders($responseHeaders),
                 'body' => $responseBody,
                 'body_size' => strlen($responseBody),
             ];

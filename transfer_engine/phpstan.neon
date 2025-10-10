@@ -1,0 +1,42 @@
+parameters:
+    level: max
+    paths:
+        - src
+        - tests
+    
+    # Exclude vendor and cache directories
+    excludePaths:
+        - vendor
+        - storage
+        - var
+    
+    # Bootstrap file (if needed for initialization)
+    # bootstrapFiles:
+    #     - tests/bootstrap.php
+    
+    # Check missing type hints
+    checkMissingIterableValueType: true
+    checkGenericClassInNonGenericObjectType: false
+    
+    # Report all errors
+    reportUnmatchedIgnoredErrors: true
+    
+    # Ignore specific errors (can be removed once fixed)
+    ignoreErrors:
+        # Add specific errors to ignore here if needed
+        # - '#Call to an undefined method#'
+    
+    # Enable stricter rules
+    checkAlwaysTrueCheckTypeFunctionCall: true
+    checkAlwaysTrueInstanceof: true
+    checkAlwaysTrueStrictComparison: true
+    checkExplicitMixedMissingReturn: true
+    checkFunctionNameCase: true
+    checkInternalClassCaseSensitivity: true
+    
+    # PHPUnit configuration
+    phpunit:
+        analysePHPUnitTestDirectory: true
+    
+    # Memory limit
+    memoryLimit: 512M

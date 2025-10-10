@@ -98,6 +98,39 @@ class CompetitorCrawlerEngine
             ];
         }
     }
+
+    /**
+     * Persist crawl summary safely for later analytics
+     */
+    private function storeCrawlResults(array $summary): void
+    {
+        try {
+            // Prefer DB table if exists; fallback to file storage under transfer_engine storage
+            $table = 'competitor_crawl_summaries';
+            $hasTable = true;
+            try {
+                $this->db->query("SELECT 1 FROM $table LIMIT 1");
+            } catch (\Throwable $t) {
+                $hasTable = false;
+            }
+
+            if ($hasTable) {
+                $sql = "INSERT INTO $table (summary_json, created_at) VALUES (?, NOW())";
+                $stmt = $this->db->prepare($sql);
+                $json = json_encode($summary);
+                $stmt->bind_param('s', $json);
+                $stmt->execute();
+                return;
+            }
+
+            $dir = __DIR__ . '/../../../../storage/crawler';
+            if (!is_dir($dir)) @mkdir($dir, 0775, true);
+            $file = $dir . '/summary-' . date('Ymd-His') . '.json';
+            @file_put_contents($file, json_encode($summary, JSON_PRETTY_PRINT));
+        } catch (\Throwable $e) {
+            $this->logger->warning('Failed to persist crawl summary', ['error' => $e->getMessage()]);
+        }
+    }
     
     /**
      * Crawl specific competitor
@@ -244,7 +277,7 @@ class CompetitorCrawlerEngine
                 'Cache-Control: max-age=0'
             ],
             CURLOPT_ENCODING => 'gzip, deflate',
-            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_SSL_VERIFYPEER => true, // Security: enforce TLS verification
             CURLOPT_SSL_VERIFYHOST => false
         ]);
         

@@ -52,7 +52,7 @@ final class TransferOrderRepository
     }
 
     /**
-     * @param array{transfer_id?:string,source_hub:string,dest_store:string,status?:string,priority?:string,reason?:array|null,confidence?:float,requested_by?:string|null,lines:array<int,array{sku:string,qty:int,uom?:string,rationale?:array|null}>} $payload
+     * @param array{transfer_id?:string,source_hub:string,dest_store:string,status?:string,priority?:string,reason?:array|null,confidence?:float,requested_by?:string|null,idempotency_key?:string|null,lines:array<int,array{sku:string,qty:int,uom?:string,rationale?:array|null}>} $payload
      */
     public function create(array $payload): TransferOrder
     {
@@ -68,11 +68,13 @@ final class TransferOrderRepository
         $requestedBy = $payload['requested_by'] ?? null;
         $lines = $payload['lines'] ?? [];
 
+        $idempotencyKey = isset($payload['idempotency_key']) && $payload['idempotency_key'] !== '' ? (string)$payload['idempotency_key'] : null;
+
         try {
             $this->pdo->beginTransaction();
 
             $stmt = $this->pdo->prepare(
-                'INSERT INTO transfer_orders (transfer_id, source_hub, dest_store, status, priority, reason, confidence, requested_by) VALUES (?,?,?,?,?,?,?,?)'
+                'INSERT INTO transfer_orders (transfer_id, source_hub, dest_store, status, priority, reason, confidence, requested_by, idempotency_key) VALUES (?,?,?,?,?,?,?,?,?)'
             );
             $stmt->execute([
                 $transferId,
@@ -83,17 +85,37 @@ final class TransferOrderRepository
                 $reason !== null ? json_encode($reason, JSON_UNESCAPED_SLASHES) : null,
                 $confidence,
                 $requestedBy,
+                $idempotencyKey,
             ]);
 
             $this->insertLines($transferId, $lines);
             $this->appendAudit($transferId, 'created', null, $status, $requestedBy, null, [
                 'priority' => $priority,
                 'confidence' => $confidence,
+                'idempotency_key' => $idempotencyKey,
             ]);
 
             $this->pdo->commit();
         } catch (PDOException $e) {
+            // Duplicate idempotency key: fetch existing and return
             $this->pdo->rollBack();
+            if ($idempotencyKey !== null && $this->isDuplicateKeyError($e)) {
+                $existing = $this->getByIdempotencyKey($idempotencyKey);
+                if ($existing !== null) {
+                    // Audit duplicate hit
+                    $this->appendAudit($existing->transferId(), 'idempotent_hit', null, $existing->status(), $requestedBy, null, [
+                        'idempotency_key' => $idempotencyKey,
+                    ]);
+
+                    $this->logger->info('transfer_order.idempotent_hit', [
+                        'transfer_id' => $existing->transferId(),
+                        'dest_store' => $payload['dest_store'],
+                        'idempotency_key' => $idempotencyKey,
+                    ]);
+
+                    return $existing;
+                }
+            }
             throw new RuntimeException('Failed to create transfer order: ' . $e->getMessage(), 0, $e);
         }
 
@@ -108,6 +130,7 @@ final class TransferOrderRepository
             'status' => $status,
             'priority' => $priority,
             'lines' => count($lines),
+            'idempotency_key' => $idempotencyKey,
         ]);
 
         return $order ?? TransferOrder::fromPayload([
@@ -119,10 +142,33 @@ final class TransferOrderRepository
             'reason' => $reason,
             'confidence' => $confidence,
             'requested_by' => $requestedBy,
+            'idempotency_key' => $idempotencyKey,
             'lines' => $lines,
             'created_at' => (new DateTimeImmutable())->format(DateTimeImmutable::ATOM),
             'updated_at' => (new DateTimeImmutable())->format(DateTimeImmutable::ATOM),
         ]);
+    }
+
+    private function isDuplicateKeyError(PDOException $e): bool
+    {
+        $msg = $e->getMessage();
+        // MySQL duplicate key error codes: 1062
+        return str_contains($msg, '1062') || str_contains(strtolower($msg), 'duplicate') || str_contains(strtolower($msg), 'unique');
+    }
+
+    private function getByIdempotencyKey(string $key): ?TransferOrder
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM transfer_orders WHERE idempotency_key = ? LIMIT 1');
+        $stmt->execute([$key]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row) {
+            return null;
+        }
+        $transferId = (string)$row['transfer_id'];
+        $row['reason'] = $row['reason'] ? json_decode($row['reason'], true) : null;
+        $row['confidence'] = isset($row['confidence']) ? (float)$row['confidence'] : 0.0;
+        $row['lines'] = $this->fetchLines($transferId);
+        return TransferOrder::fromPayload($row);
     }
 
     /**

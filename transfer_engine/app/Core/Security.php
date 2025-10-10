@@ -17,36 +17,43 @@ class Security
         $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') 
               || (($_SERVER['SERVER_PORT'] ?? '') === '443');
         
-        // Generate CSP nonce
-        $nonce = base64_encode(random_bytes(16));
+        // Generate CSP nonce for this request
+        $nonce = base64_encode(random_bytes(24)); // 24 bytes = 32 base64 chars
         $_SESSION['csp_nonce'] = $nonce;
         
-        // Security headers
+        // Security headers (modern, production-ready)
         header('X-Frame-Options: SAMEORIGIN');
         header('X-Content-Type-Options: nosniff');
-        header('Referrer-Policy: no-referrer-when-downgrade');
+        header('Referrer-Policy: strict-origin-when-cross-origin'); // More restrictive
+        header('Permissions-Policy: geolocation=(), microphone=(), camera=()'); // Feature policy
         
+        // HSTS with includeSubDomains (only on HTTPS)
         if ($https) {
             header('Strict-Transport-Security: max-age=31536000; includeSubDomains; preload');
         }
         
-        // Content Security Policy (relaxed for external CDNs per user request)
-        // Allow jsDelivr and common CDNs for Bootstrap, jQuery, and Bootstrap Icons.
+        // Content Security Policy with nonce-based script loading
+        // CDNs allowed for external libraries (jsDelivr, Bootstrap, jQuery)
         $cdn = "https://cdn.jsdelivr.net";
-        $csp = implode('; ', [
+        $cspDirectives = [
             "default-src 'self' $cdn",
             "img-src 'self' data: $cdn",
-            "style-src 'self' 'unsafe-inline' $cdn",
+            "style-src 'self' 'unsafe-inline' $cdn", // Keep unsafe-inline for Bootstrap utilities
             "font-src 'self' data: $cdn",
-            // Temporarily allow inline scripts while migrating; keep 'self' and CDN
-            "script-src 'self' 'unsafe-inline' $cdn",
+            "script-src 'self' 'nonce-{$nonce}' $cdn", // Nonce-based, no unsafe-inline
             "connect-src 'self' $cdn",
             "base-uri 'self'",
             "form-action 'self'",
-            "frame-ancestors 'self'"
-        ]);
+            "frame-ancestors 'self'",
+            "upgrade-insecure-requests" // Auto-upgrade HTTP to HTTPS
+        ];
+        
+        if (!$https) {
+            // Remove upgrade-insecure-requests on HTTP (dev environments)
+            $cspDirectives = array_filter($cspDirectives, fn($d) => $d !== 'upgrade-insecure-requests');
+        }
 
-        header("Content-Security-Policy: {$csp}");
+        header("Content-Security-Policy: " . implode('; ', $cspDirectives));
     }
     
     public static function generateCSRFToken(): string
@@ -56,6 +63,11 @@ class Security
         }
         
         return $_SESSION['csrf_token'];
+    }
+    
+    public static function getCspNonce(): string
+    {
+        return $_SESSION['csp_nonce'] ?? '';
     }
     
     public static function verifyCSRFToken(string $token): bool

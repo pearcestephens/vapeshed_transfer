@@ -8,6 +8,7 @@ use App\Support\Response;
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="<?= htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
+    <meta name="csp-nonce" content="<?= htmlspecialchars($_SESSION['csp_nonce'] ?? '', ENT_QUOTES, 'UTF-8') ?>">
     <title><?= isset($title) ? htmlspecialchars($title) . ' · ' : '' ?>Vape Shed Control Panel</title>
     <?php
     $publicRoot = defined('PUBLIC_PATH') ? PUBLIC_PATH : dirname(__DIR__, 2) . '/public';
@@ -15,9 +16,10 @@ use App\Support\Response;
     $jsPath = $publicRoot . '/assets/js/dashboard.js';
     $cssVersion = is_file($cssPath) ? (string)filemtime($cssPath) : '0';
     $jsVersion = is_file($jsPath) ? (string)filemtime($jsPath) : '0';
+    $cspNonce = htmlspecialchars($_SESSION['csp_nonce'] ?? '', ENT_QUOTES, 'UTF-8');
     ?>
     <link rel="stylesheet" href="/assets/css/dashboard.css?v=<?= $cssVersion ?>">
-    <script defer src="/assets/js/dashboard.js?v=<?= $jsVersion"></script>
+    <script defer src="/assets/js/dashboard.js?v=<?= $jsVersion ?>" nonce="<?= $cspNonce ?>"></script>
 </head>
 <body class="layout dashboard-shell">
 <header class="topbar">

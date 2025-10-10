@@ -1,0 +1,54 @@
+# Auto detect text files and normalize line endings to LF
+* text=auto eol=lf
+
+# Explicitly declare text files
+*.php text
+*.js text
+*.ts text
+*.json text
+*.yml text
+*.yaml text
+*.md text
+*.txt text
+*.sql text
+*.sh text eol=lf
+*.xml text
+
+# Declare files that should always have CRLF line endings on checkout
+*.bat text eol=crlf
+
+# Denote all files that are truly binary and should not be modified
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
+*.tar binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.eot binary
+*.otf binary
+
+# Linguist overrides for accurate language statistics
+*.md linguist-detectable
+*.sql linguist-detectable
+docs/** linguist-documentation
+tests/** linguist-vendored=false
+transfer_engine/tests/** linguist-vendored=false
+vendor/** linguist-vendored
+node_modules/** linguist-vendored
+*.min.js linguist-vendored
+*.min.css linguist-vendored
+
+# Export-ignore (files not included in archives)
+.gitattributes export-ignore
+.gitignore export-ignore
+.editorconfig export-ignore
+.github/ export-ignore
+tests/ export-ignore
+transfer_engine/tests/ export-ignore
+*.md export-ignore

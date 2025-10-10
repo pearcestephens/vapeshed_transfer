@@ -1,0 +1,325 @@
+[2025-10-10 10:24:40] ==========================================
+[2025-10-10 10:24:40] Advanced Test Suite Execution Started
+[2025-10-10 10:24:40] ==========================================
+[2025-10-10 10:24:40] PHP: PHP 8.1.33 (cli) (built: Jul  3 2025 16:23:26) (NTS)
+[2025-10-10 10:24:40] PHPUnit: PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.33
+Configuration: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/phpunit.xml
+
+..........                                                        10 / 10 (100%)
+
+Time: 00:00.028, Memory: 10.00 MB
+
+OK, but there were issues!
+Tests: 10, Assertions: 25, PHPUnit Deprecations: 1.
+[2025-10-10 10:24:40] Basic Suite: PASSED (0s)
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.33
+Configuration: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/phpunit.xml
+
+..[2025-10-10 10:24:41] Security Suite: PASSED (1s)
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.33
+Configuration: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/phpunit.xml
+
+EEEEEEEEEE                                                        10 / 10 (100%)
+
+Time: 00:00.021, Memory: 10.00 MB
+
+There were 10 errors:
+
+1) Tests\Integration\TransferEngineIntegrationTest::testBasicTransferExecution
+Error: Undefined constant "App\Core\DB_DATABASE"
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:92
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:41
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:48
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:28
+
+2) Tests\Integration\TransferEngineIntegrationTest::testTransferWithProductList
+Error: Undefined constant "App\Core\DB_DATABASE"
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:92
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:41
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:48
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:28
+
+3) Tests\Integration\TransferEngineIntegrationTest::testAllocationFairness
+Error: Undefined constant "App\Core\DB_DATABASE"
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:92
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:41
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:48
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:28
+
+4) Tests\Integration\TransferEngineIntegrationTest::testZeroWarehouseStockHandling
+Error: Undefined constant "App\Core\DB_DATABASE"
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:92
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:41
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:48
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:28
+
+5) Tests\Integration\TransferEngineIntegrationTest::testDatabaseConnectionPooling
+Error: Undefined constant "App\Core\DB_DATABASE"
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:92
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:41
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:48
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:28
+
+6) Tests\Integration\TransferEngineIntegrationTest::testConcurrentExecutionSafety
+Error: Undefined constant "App\Core\DB_DATABASE"
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:92
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:41
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:48
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:28
+
+7) Tests\Integration\TransferEngineIntegrationTest::testConfigurationValidation
+Error: Undefined constant "App\Core\DB_DATABASE"
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:92
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:41
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:48
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:28
+
+8) Tests\Integration\TransferEngineIntegrationTest::testDryRunMode
+Error: Undefined constant "App\Core\DB_DATABASE"
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:92
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:41
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:48
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:28
+
+9) Tests\Integration\TransferEngineIntegrationTest::testMinLinesThreshold
+Error: Undefined constant "App\Core\DB_DATABASE"
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:92
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:41
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:48
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:28
+
+10) Tests\Integration\TransferEngineIntegrationTest::testLoggerIntegration
+Error: Undefined constant "App\Core\DB_DATABASE"
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:92
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:41
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:48
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:28
+
+ERRORS!
+Tests: 10, Assertions: 0, Errors: 10, PHPUnit Deprecations: 1.
+[2025-10-10 10:24:41] Integration Suite: PASSED (0s)
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.33
+Configuration: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/phpunit.xml
+
+
+[BASELINE] Single request: 1.5101432800293ms
+
+[PERF] Duration: 3.95ms | Memory: 0MB | Peak: 8MB
+R
+[SEQUENTIAL] 10 requests:
+  Total: 11.873960494995ms
+  Avg: 0.57110786437988ms
+  Max: 0.71811676025391ms
+
+[PERF] Duration: 11.99ms | Memory: 0MB | Peak: 8MB
+R
+[MEMORY] Growth: 0MB (0%)
+
+[PERF] Duration: 11.21ms | Memory: 0MB | Peak: 8MB
+R
+[PERF] Duration: 6.11ms | Memory: 2MB | Peak: 10MB
+E
+[RAPID] 25 requests in 13.57102394104ms
+  Throughput: 1842.16 req/sec
+  Errors: 0
+
+[PERF] Duration: 14.33ms | Memory: 0MB | Peak: 10MB
+R
+[LARGE SET]
+  Duration: 0.67591667175293ms
+  Memory: 0MB
+  Allocations: 2
+
+[PERF] Duration: 0.8ms | Memory: 0MB | Peak: 10MB
+R
+[CONSISTENCY]
+  Avg: 0.51ms
+  StdDev: 0.05ms
+  CV: 9.74%
+
+[PERF] Duration: 7.87ms | Memory: 0MB | Peak: 10MB
+R                                                             7 / 7 (100%)
+
+Time: 00:00.065, Memory: 10.00 MB
+
+There was 1 error:
+
+1) Tests\Performance\LoadTest::testConnectionPoolUnderLoad
+Error: Undefined constant "App\Core\DB_DATABASE"
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:92
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:41
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:48
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:163
+
+--
+
+There were 7 risky tests:
+
+1) Tests\Performance\LoadTest::testSingleRequestPerformance
+Test code or tested code printed unexpected output: 
+[BASELINE] Single request: 1.5101432800293ms
+
+[PERF] Duration: 3.95ms | Memory: 0MB | Peak: 8MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:51
+
+2) Tests\Performance\LoadTest::testSequentialRequests
+Test code or tested code printed unexpected output: 
+[SEQUENTIAL] 10 requests:
+  Total: 11.873960494995ms
+  Avg: 0.57110786437988ms
+  Max: 0.71811676025391ms
+
+[PERF] Duration: 11.99ms | Memory: 0MB | Peak: 8MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:77
+
+3) Tests\Performance\LoadTest::testMemoryLeakDetection
+Test code or tested code printed unexpected output: 
+[MEMORY] Growth: 0MB (0%)
+
+[PERF] Duration: 11.21ms | Memory: 0MB | Peak: 8MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:117
+
+4) Tests\Performance\LoadTest::testConnectionPoolUnderLoad
+Test code or tested code printed unexpected output: 
+[PERF] Duration: 6.11ms | Memory: 2MB | Peak: 10MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:161
+
+5) Tests\Performance\LoadTest::testRapidSequentialExecution
+Test code or tested code printed unexpected output: 
+[RAPID] 25 requests in 13.57102394104ms
+  Throughput: 1842.16 req/sec
+  Errors: 0
+
+[PERF] Duration: 14.33ms | Memory: 0MB | Peak: 10MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:200
+
+6) Tests\Performance\LoadTest::testLargeResultSetHandling
+Test code or tested code printed unexpected output: 
+[LARGE SET]
+  Duration: 0.67591667175293ms
+  Memory: 0MB
+  Allocations: 2
+
+[PERF] Duration: 0.8ms | Memory: 0MB | Peak: 10MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:238
+
+7) Tests\Performance\LoadTest::testResponseTimeConsistency
+Test code or tested code printed unexpected output: 
+[CONSISTENCY]
+  Avg: 0.51ms
+  StdDev: 0.05ms
+  CV: 9.74%
+
+[PERF] Duration: 7.87ms | Memory: 0MB | Peak: 10MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:274
+
+ERRORS!
+Tests: 7, Assertions: 18, Errors: 1, PHPUnit Deprecations: 1, Risky: 7.
+[2025-10-10 10:24:41] Performance Suite: PASSED (0s)
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.33
+Configuration: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/phpunit.xml
+
+.FE..EE
+[STABILITY] 50 executions: 50 success, 0 errors
+REE                                                        10 / 10 (100%)
+
+Time: 00:00.066, Memory: 10.00 MB
+
+There were 5 errors:
+
+1) Tests\Chaos\ChaosTest::testNegativeStockHandling
+Error: Undefined constant "App\Core\DB_DATABASE"
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:92
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:41
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:48
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php:85
+
+2) Tests\Chaos\ChaosTest::testInvalidConfigurationCombinations
+Exception: No eligible outlets found for transfer
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Services/TransferEngineService.php:119
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php:186
+
+3) Tests\Chaos\ChaosTest::testLargeProductListHandling
+TypeError: App\Services\TransferEngineService::allocateProduct(): Argument #1 ($product) must be of type array, string given, called in /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Services/TransferEngineService.php on line 484
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Services/TransferEngineService.php:503
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Services/TransferEngineService.php:484
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Services/TransferEngineService.php:148
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php:210
+
+4) Tests\Chaos\ChaosTest::testDatabaseConnectionRecovery
+Error: Undefined constant "App\Core\DB_DATABASE"
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:92
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:41
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:48
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php:273
+
+5) Tests\Chaos\ChaosTest::testResourceCleanupAfterErrors
+Error: Undefined constant "App\Core\DB_DATABASE"
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:92
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:41
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:48
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php:290
+
+--
+
+There was 1 failure:
+
+1) Tests\Chaos\ChaosTest::testZeroProductsScenario
+Should return empty allocations when no products qualify
+Failed asserting that actual size 2 matches expected size 0.
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php:67
+
+--
+
+There was 1 risky test:
+
+1) Tests\Chaos\ChaosTest::testRepeatedExecutionStability
+Test code or tested code printed unexpected output: 
+[STABILITY] 50 executions: 50 success, 0 errors
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php:224
+
+ERRORS!
+Tests: 10, Assertions: 13, Errors: 5, Failures: 1, PHPUnit Deprecations: 1, Risky: 1.
+[2025-10-10 10:24:41] Chaos Suite: PASSED (0s)
+[2025-10-10 10:24:41] ==========================================
+[2025-10-10 10:24:41] Test Summary
+[2025-10-10 10:24:41] Total: 5 | Passed: 5 | Failed: 0
+[2025-10-10 10:24:41] Duration: 1s
+[2025-10-10 10:24:41] ==========================================
+[2025-10-10 10:24:41] Success Rate: 100%

@@ -6,12 +6,27 @@ namespace App\Support;
 use App\Core\Database;
 
 /**
- * Database abstraction layer providing PDO access for metrics.
+ * Database abstraction layer providing PDO access and query helpers for metrics.
  */
 final class Db
 {
+    private static ?self $instance = null;
     private static ?\PDO $pdo = null;
 
+    /**
+     * Get singleton instance
+     */
+    public static function getInstance(): self
+    {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+
+    /**
+     * Get PDO connection
+     */
     public static function pdo(): ?\PDO
     {
         if (self::$pdo !== null) {
@@ -53,6 +68,149 @@ final class Db
         } catch (\Throwable $e) {
             error_log('Db::pdo() failed: ' . $e->getMessage());
             return null;
+        }
+    }
+
+    /**
+     * Execute INSERT query and return inserted ID
+     */
+    public function insert(string $query, array $params = []): int|false
+    {
+        try {
+            $pdo = self::pdo();
+            if (!$pdo) {
+                return false;
+            }
+
+            $stmt = $pdo->prepare($query);
+            $success = $stmt->execute($params);
+
+            return $success ? (int)$pdo->lastInsertId() : false;
+        } catch (\PDOException $e) {
+            error_log('Db::insert() failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Execute query and return all results
+     */
+    public function fetchAll(string $query, array $params = []): array
+    {
+        try {
+            $pdo = self::pdo();
+            if (!$pdo) {
+                return [];
+            }
+
+            $stmt = $pdo->prepare($query);
+            $stmt->execute($params);
+
+            return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\PDOException $e) {
+            error_log('Db::fetchAll() failed: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Execute query and return single result
+     */
+    public function fetchOne(string $query, array $params = []): array|false
+    {
+        try {
+            $pdo = self::pdo();
+            if (!$pdo) {
+                return false;
+            }
+
+            $stmt = $pdo->prepare($query);
+            $stmt->execute($params);
+
+            $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+            return $result !== false ? $result : false;
+        } catch (\PDOException $e) {
+            error_log('Db::fetchOne() failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Execute query (UPDATE, DELETE, etc.)
+     */
+    public function execute(string $query, array $params = []): bool
+    {
+        try {
+            $pdo = self::pdo();
+            if (!$pdo) {
+                return false;
+            }
+
+            $stmt = $pdo->prepare($query);
+            return $stmt->execute($params);
+        } catch (\PDOException $e) {
+            error_log('Db::execute() failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Get number of affected rows
+     */
+    public function rowCount(): int
+    {
+        try {
+            $pdo = self::pdo();
+            if (!$pdo) {
+                return 0;
+            }
+
+            return (int)$pdo->query("SELECT ROW_COUNT()")->fetchColumn();
+        } catch (\PDOException $e) {
+            error_log('Db::rowCount() failed: ' . $e->getMessage());
+            return 0;
+        }
+    }
+
+    /**
+     * Begin transaction
+     */
+    public function beginTransaction(): bool
+    {
+        try {
+            $pdo = self::pdo();
+            return $pdo ? $pdo->beginTransaction() : false;
+        } catch (\PDOException $e) {
+            error_log('Db::beginTransaction() failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Commit transaction
+     */
+    public function commit(): bool
+    {
+        try {
+            $pdo = self::pdo();
+            return $pdo ? $pdo->commit() : false;
+        } catch (\PDOException $e) {
+            error_log('Db::commit() failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Rollback transaction
+     */
+    public function rollback(): bool
+    {
+        try {
+            $pdo = self::pdo();
+            return $pdo ? $pdo->rollBack() : false;
+        } catch (\PDOException $e) {
+            error_log('Db::rollback() failed: ' . $e->getMessage());
+            return false;
         }
     }
 }

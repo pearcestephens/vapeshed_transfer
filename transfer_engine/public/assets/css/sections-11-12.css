@@ -1,0 +1,540 @@
+/**
+ * Sections 11 & 12 - Shared Styles
+ * 
+ * Common styles for traffic monitoring and API testing interfaces
+ * 
+ * @package     CIS Staff Portal
+ * @version     1.0.0
+ * @author      Ecigdis Limited Engineering Team
+ * @copyright   2025 Ecigdis Limited
+ */
+
+/* ============================================
+   GLOBAL UTILITIES
+   ============================================ */
+
+.global-loader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.loader-content {
+    background: #fff;
+    padding: 30px 50px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    max-width: 400px;
+}
+
+.toast-item {
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    margin-bottom: 10px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    opacity: 0;
+    transform: translateX(400px);
+    transition: all 0.3s ease;
+}
+
+.toast-item.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.toast-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.toast-message {
+    flex: 1;
+    font-size: 14px;
+}
+
+.toast-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    width: 24px;
+    height: 24px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.toast-success .toast-icon { color: #28a745; }
+.toast-error .toast-icon { color: #dc3545; }
+.toast-warning .toast-icon { color: #ffc107; }
+.toast-info .toast-icon { color: #17a2b8; }
+
+/* ============================================
+   TRAFFIC DASHBOARD
+   ============================================ */
+
+.traffic-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.stat-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.stat-card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #6c757d;
+    text-transform: uppercase;
+}
+
+.stat-card-icon {
+    font-size: 24px;
+    color: #007bff;
+}
+
+.stat-card-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 5px;
+}
+
+.stat-card-change {
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.stat-card-change.positive {
+    color: #28a745;
+}
+
+.stat-card-change.negative {
+    color: #dc3545;
+}
+
+/* ============================================
+   ENDPOINT HEALTH GRID
+   ============================================ */
+
+.endpoint-health-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.endpoint-health-item {
+    background: #fff;
+    border-radius: 6px;
+    padding: 15px;
+    border-left: 4px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
+}
+
+.endpoint-health-item:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.endpoint-health-item.status-green {
+    border-left-color: #28a745;
+}
+
+.endpoint-health-item.status-yellow {
+    border-left-color: #ffc107;
+}
+
+.endpoint-health-item.status-red {
+    border-left-color: #dc3545;
+}
+
+.endpoint-health-name {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.endpoint-health-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+/* ============================================
+   LIVE FEED
+   ============================================ */
+
+.live-feed-container {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    max-height: 500px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.live-feed-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+}
+
+.live-feed-title {
+    font-weight: 600;
+    font-size: 16px;
+    margin: 0;
+}
+
+.live-feed-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
+
+.live-feed-indicator {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #28a745;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.live-feed-items {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.live-feed-item {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f1f3f5;
+    font-size: 13px;
+    font-family: 'Monaco', 'Courier New', monospace;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+}
+
+.live-feed-item:hover {
+    background: #f8f9fa;
+}
+
+.live-feed-item.status-200 { border-left: 3px solid #28a745; }
+.live-feed-item.status-300 { border-left: 3px solid #17a2b8; }
+.live-feed-item.status-400 { border-left: 3px solid #ffc107; }
+.live-feed-item.status-500 { border-left: 3px solid #dc3545; }
+
+.live-feed-method {
+    font-weight: 700;
+    margin-right: 10px;
+    min-width: 50px;
+}
+
+.live-feed-uri {
+    flex: 1;
+    color: #495057;
+}
+
+.live-feed-status-badge {
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    margin: 0 10px;
+}
+
+.live-feed-time {
+    color: #6c757d;
+    font-size: 11px;
+    min-width: 60px;
+    text-align: right;
+}
+
+/* ============================================
+   API TESTING UI
+   ============================================ */
+
+.api-test-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 992px) {
+    .api-test-container {
+        grid-template-columns: 1fr;
+    }
+}
+
+.api-test-panel {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.api-test-panel-header {
+    padding: 15px 20px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    font-weight: 600;
+}
+
+.api-test-panel-body {
+    padding: 20px;
+}
+
+.code-editor-container {
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.code-editor {
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    min-height: 300px;
+    padding: 15px;
+    background: #f8f9fa;
+    border: none;
+    resize: vertical;
+    width: 100%;
+}
+
+.response-viewer {
+    background: #f8f9fa;
+    border-radius: 4px;
+    padding: 15px;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.response-viewer pre {
+    margin: 0;
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.api-test-tabs {
+    display: flex;
+    border-bottom: 2px solid #dee2e6;
+    margin-bottom: 20px;
+}
+
+.api-test-tab {
+    padding: 10px 20px;
+    background: none;
+    border: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: #6c757d;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+}
+
+.api-test-tab:hover {
+    color: #007bff;
+}
+
+.api-test-tab.active {
+    color: #007bff;
+    border-bottom-color: #007bff;
+}
+
+/* ============================================
+   ERROR TRACKING
+   ============================================ */
+
+.error-group {
+    background: #fff;
+    border-radius: 8px;
+    border-left: 4px solid #dc3545;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
+}
+
+.error-group:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.error-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 15px;
+}
+
+.error-group-title {
+    font-weight: 600;
+    font-size: 16px;
+    color: #dc3545;
+    margin-bottom: 5px;
+}
+
+.error-group-location {
+    font-size: 13px;
+    color: #6c757d;
+    font-family: 'Monaco', 'Courier New', monospace;
+}
+
+.error-group-badge {
+    background: #dc3545;
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.error-group-message {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 4px;
+    font-family: 'Monaco', 'Courier New', monospace;
+    font-size: 13px;
+    margin-bottom: 15px;
+}
+
+.error-group-actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* ============================================
+   HEALTH CHECK COMPONENTS
+   ============================================ */
+
+.health-check-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.health-check-item {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.health-check-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.health-check-icon.status-pass {
+    background: #d4edda;
+    color: #28a745;
+}
+
+.health-check-icon.status-warn {
+    background: #fff3cd;
+    color: #ffc107;
+}
+
+.health-check-icon.status-fail {
+    background: #f8d7da;
+    color: #dc3545;
+}
+
+.health-check-info {
+    flex: 1;
+}
+
+.health-check-name {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 5px;
+}
+
+.health-check-status {
+    font-size: 13px;
+    color: #6c757d;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 768px) {
+    .traffic-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .endpoint-health-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .toast-container {
+        left: 10px;
+        right: 10px;
+        max-width: none;
+    }
+}

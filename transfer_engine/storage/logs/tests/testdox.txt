@@ -1,0 +1,12 @@
+Chaos (Tests\Chaos\Chaos)
+ [ ] Missing warehouse handling
+ [x] Zero products scenario
+ [ ] Negative stock handling
+ [x] Concurrent execution safety
+ [x] Kill switch activation
+ [x] Invalid configuration combinations
+ [ ] Large product list handling
+ [x] Repeated execution stability
+ [x] Database connection recovery
+ [x] Resource cleanup after errors
+

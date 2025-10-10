@@ -1,0 +1,5 @@
+{"stage":"start","message":"Initializing engine...","ts":"2025-10-10T23:24:41+13:00","run_id":"run_20251010_232441_341310"}
+{"stage":"outlets","message":"Loading outlets...","ts":"2025-10-10T23:24:41+13:00","run_id":"run_20251010_232441_341310"}
+{"stage":"products","message":"Loading products...","ts":"2025-10-10T23:24:41+13:00","run_id":"run_20251010_232441_341310"}
+{"stage":"allocate","message":"Calculating allocations...","ts":"2025-10-10T23:24:41+13:00","run_id":"run_20251010_232441_341310"}
+{"stage":"allocate_init","message":"Allocating per product...","count":1000,"run_id":"run_20251010_232441_341310"}

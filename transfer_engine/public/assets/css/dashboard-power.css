@@ -1,0 +1,775 @@
+/**
+ * Dashboard Power CSS Framework
+ * 
+ * Super upgraded dashboard styling with power user controls
+ * Supports: Themes, Profiles, Responsive Design, Animations
+ * 
+ * @package transfer_engine
+ * @version 2.0
+ */
+
+/* ========================================
+   CSS Custom Properties & Theme System
+   ======================================== */
+
+:root {
+  /* Base Theme Colors */
+  --color-blue: #3b82f6;
+  --color-teal: #14b8a6;
+  --color-green: #10b981;
+  --color-purple: #8b5cf6;
+  --color-red: #ef4444;
+  --color-neon: #00ff88;
+  
+  /* Light Theme */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
+  --border-color: #e2e8f0;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  
+  /* Spacing System */
+  --spacing-compact: 0.5rem;
+  --spacing-standard: 1rem;
+  --spacing-comfortable: 1.5rem;
+  
+  /* Animation Timing */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s ease;
+  
+  /* Module Sizing */
+  --module-min-height: 200px;
+  --module-header-height: 3rem;
+  --header-height: 4rem;
+  --footer-height: 2.5rem;
+  --settings-panel-height: 200px;
+}
+
+/* Dark Theme */
+[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --text-muted: #64748b;
+  --border-color: #334155;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.3);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3);
+}
+
+/* Auto Theme (follows system preference) */
+[data-theme="auto"] {
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="auto"] {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #64748b;
+    --border-color: #334155;
+  }
+}
+
+/* Accent Color System */
+[data-accent="blue"] { --accent-color: var(--color-blue); }
+[data-accent="teal"] { --accent-color: var(--color-teal); }
+[data-accent="green"] { --accent-color: var(--color-green); }
+[data-accent="purple"] { --accent-color: var(--color-purple); }
+[data-accent="red"] { --accent-color: var(--color-red); }
+[data-accent="neon"] { --accent-color: var(--color-neon); }
+
+/* ========================================
+   Base Layout & Structure
+   ======================================== */
+
+.dashboard-power {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  transition: all var(--transition-normal);
+}
+
+/* Header */
+.dashboard-header {
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  height: var(--header-height);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: var(--shadow-sm);
+}
+
+.dashboard-header .container-fluid {
+  height: 100%;
+}
+
+/* Profile Selector */
+.profile-selector .form-select {
+  min-width: 200px;
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+}
+
+/* Status Indicators */
+.status-indicator {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  font-size: 0.875rem;
+}
+
+.status-healthy { 
+  background-color: var(--color-green); 
+  color: white; 
+}
+
+.status-warning { 
+  background-color: #f59e0b; 
+  color: white; 
+}
+
+.status-error { 
+  background-color: var(--color-red); 
+  color: white; 
+}
+
+.status-loading {
+  background-color: var(--text-muted);
+  color: white;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Live Indicator */
+.live-indicator .badge.pulse {
+  animation: pulse-neon 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse-neon {
+  0%, 100% { 
+    opacity: 1;
+    box-shadow: 0 0 5px var(--color-green);
+  }
+  50% { 
+    opacity: 0.7;
+    box-shadow: 0 0 10px var(--color-green), 0 0 20px var(--color-green);
+  }
+}
+
+/* ========================================
+   Settings Panel
+   ======================================== */
+
+.settings-panel {
+  background-color: var(--bg-primary);
+  border-bottom: 1px solid var(--border-color);
+  overflow: hidden;
+  transition: max-height var(--transition-normal);
+  max-height: var(--settings-panel-height);
+  box-shadow: var(--shadow-md);
+}
+
+.settings-panel.collapsed {
+  max-height: 0;
+  border-bottom: none;
+}
+
+.settings-panel .container-fluid {
+  padding: 1.5rem;
+}
+
+.setting-group {
+  margin-bottom: 1rem;
+}
+
+.setting-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Accent Color Picker */
+.accent-colors {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.accent-radio {
+  display: none;
+}
+
+.accent-color {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.accent-color:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-md);
+}
+
+.accent-radio:checked + .accent-color {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 3px var(--bg-primary), 0 0 0 5px var(--accent-color);
+}
+
+.accent-color::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background-color: white;
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.accent-radio:checked + .accent-color::after {
+  opacity: 1;
+}
+
+/* ========================================
+   Dashboard Grid & Modules
+   ======================================== */
+
+.dashboard-main {
+  min-height: calc(100vh - var(--header-height) - var(--footer-height));
+  padding: 1.5rem 0;
+}
+
+.dashboard-grid {
+  display: grid;
+  gap: var(--spacing-standard);
+  margin-bottom: 2rem;
+}
+
+/* Grid Responsive Breakpoints */
+@media (min-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 992px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(var(--grid-columns, 3), 1fr);
+  }
+}
+
+@media (min-width: 1400px) {
+  .dashboard-grid[style*="--grid-columns: 4"] {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .dashboard-grid[style*="--grid-columns: 5"] {
+    grid-template-columns: repeat(5, 1fr);
+  }
+  
+  .dashboard-grid[style*="--grid-columns: 6"] {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+/* Density Variations */
+[data-profile="war_room"] .dashboard-grid {
+  gap: var(--spacing-compact);
+}
+
+[data-profile="minimal"] .dashboard-grid,
+[data-profile="demo"] .dashboard-grid {
+  gap: var(--spacing-comfortable);
+}
+
+/* ========================================
+   Module Styling
+   ======================================== */
+
+.dashboard-module {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  min-height: var(--module-min-height);
+  display: flex;
+  flex-direction: column;
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-module:hover {
+  border-color: var(--accent-color);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.dashboard-module.module-fullscreen {
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1050;
+  border-radius: 0;
+  min-height: auto;
+  height: calc(100vh - var(--header-height));
+}
+
+/* Module Header */
+.module-header {
+  padding: 1rem;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  height: var(--module-header-height);
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.module-title {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.module-title i {
+  margin-right: 0.5rem;
+  color: var(--accent-color);
+}
+
+.module-category {
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+}
+
+.module-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.module-status {
+  margin-left: 0.5rem;
+}
+
+/* Module Content */
+.module-content {
+  flex: 1;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Enable proper flex shrinking */
+}
+
+.loading-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  min-height: 100px;
+}
+
+/* Module Settings Panel */
+.module-settings-panel {
+  position: absolute;
+  top: var(--module-header-height);
+  left: 0;
+  right: 0;
+  background-color: var(--bg-tertiary);
+  border-top: 1px solid var(--border-color);
+  z-index: 10;
+  max-height: 300px;
+  overflow-y: auto;
+  transition: all var(--transition-normal);
+}
+
+.module-settings-panel.collapsed {
+  max-height: 0;
+  border-top: none;
+}
+
+.settings-header {
+  padding: 1rem;
+  background-color: var(--bg-secondary);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: between;
+  align-items: center;
+}
+
+.settings-content {
+  padding: 1rem;
+}
+
+.setting-item {
+  margin-bottom: 1rem;
+}
+
+.setting-item:last-child {
+  margin-bottom: 0;
+}
+
+/* ========================================
+   Profile-Specific Styling
+   ======================================== */
+
+/* War Room Profile */
+[data-profile="war_room"] {
+  --accent-color: var(--color-red);
+}
+
+[data-profile="war_room"] .dashboard-module {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+[data-profile="war_room"] .module-header {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+[data-profile="war_room"] .live-indicator {
+  animation: war-room-pulse 1s ease-in-out infinite;
+}
+
+@keyframes war-room-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Demo Profile */
+[data-profile="demo"] .dashboard-module::after {
+  content: 'DEMO';
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: var(--color-purple);
+  color: white;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  z-index: 5;
+  opacity: 0.7;
+}
+
+/* Minimal Profile */
+[data-profile="minimal"] .module-controls {
+  display: none;
+}
+
+[data-profile="minimal"] .module-category {
+  display: none;
+}
+
+/* ========================================
+   Component Styling
+   ======================================== */
+
+/* Emergency Controls */
+.emergency-controls .btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.emergency-controls .btn-danger:hover {
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+  animation: emergency-glow 0.5s ease-in-out;
+}
+
+@keyframes emergency-glow {
+  0% { box-shadow: 0 0 0 rgba(239, 68, 68, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.8); }
+  100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.5); }
+}
+
+/* Add Module Container */
+.add-module-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.add-module-btn {
+  border: 2px dashed var(--border-color);
+  background-color: transparent;
+  color: var(--text-muted);
+  transition: all var(--transition-normal);
+  padding: 2rem 3rem;
+  border-radius: 1rem;
+}
+
+.add-module-btn:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  background-color: rgba(var(--accent-color), 0.05);
+  transform: scale(1.05);
+}
+
+/* Module Options */
+.module-option {
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-normal);
+  cursor: pointer;
+}
+
+.module-option:hover {
+  border-color: var(--accent-color);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+/* ========================================
+   Footer
+   ======================================== */
+
+.dashboard-footer {
+  background-color: var(--bg-primary);
+  border-top: 1px solid var(--border-color);
+  height: var(--footer-height);
+  margin-top: auto;
+}
+
+.dashboard-footer .container-fluid {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.status-summary .status-item {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.status-summary .status-item i {
+  margin-right: 0.25rem;
+  width: 1rem;
+  height: 1rem;
+}
+
+.last-updated {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.auto-refresh-indicator i.rotate {
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* ========================================
+   Responsive Design
+   ======================================== */
+
+/* Mobile Optimizations */
+@media (max-width: 767px) {
+  .dashboard-header .header-center,
+  .dashboard-header .emergency-controls {
+    display: none;
+  }
+  
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-compact);
+  }
+  
+  .module-header {
+    padding: 0.75rem;
+  }
+  
+  .module-content {
+    padding: 0.75rem;
+  }
+  
+  .settings-panel .row > div {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Tablet Optimizations */
+@media (min-width: 768px) and (max-width: 991px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .emergency-controls .btn span {
+    display: none;
+  }
+}
+
+/* Large Screen Optimizations */
+@media (min-width: 1400px) {
+  .dashboard-main {
+    padding: 2rem 0;
+  }
+  
+  .dashboard-grid {
+    gap: 1.5rem;
+  }
+}
+
+/* ========================================
+   Accessibility Features
+   ======================================== */
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  :root {
+    --border-color: #000000;
+    --shadow-sm: 0 2px 4px 0 rgb(0 0 0 / 0.5);
+    --shadow-md: 0 4px 8px 0 rgb(0 0 0 / 0.5);
+    --shadow-lg: 0 8px 16px 0 rgb(0 0 0 / 0.5);
+  }
+  
+  .dashboard-module {
+    border-width: 2px;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .auto-refresh-indicator i.rotate {
+    animation: none;
+  }
+}
+
+/* Focus Management */
+.dashboard-power :focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+.dashboard-power :focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Screen Reader Support */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ========================================
+   Utility Classes
+   ======================================== */
+
+.text-accent { color: var(--accent-color) !important; }
+.bg-accent { background-color: var(--accent-color) !important; }
+.border-accent { border-color: var(--accent-color) !important; }
+
+.transition-fast { transition: all var(--transition-fast); }
+.transition-normal { transition: all var(--transition-normal); }
+.transition-slow { transition: all var(--transition-slow); }
+
+.shadow-accent {
+  box-shadow: 0 4px 6px -1px rgba(var(--accent-color), 0.3),
+              0 2px 4px -1px rgba(var(--accent-color), 0.1);
+}
+
+.glow-accent {
+  box-shadow: 0 0 20px rgba(var(--accent-color), 0.5);
+}
+
+/* Animation Classes */
+.fade-in {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.slide-down {
+  animation: slideDown 0.3s ease-in-out;
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDown {
+  from { 
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Print Styles */
+@media print {
+  .dashboard-header,
+  .dashboard-footer,
+  .settings-panel,
+  .module-controls {
+    display: none;
+  }
+  
+  .dashboard-main {
+    margin: 0;
+    padding: 0;
+  }
+  
+  .dashboard-module {
+    border: 1px solid #000;
+    break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+}

@@ -1,0 +1,8 @@
+{"stage":"start","message":"Initializing engine...","ts":"2025-10-10T23:55:56+13:00","run_id":"run_20251010_235556_355313"}
+{"stage":"outlets","message":"Loading outlets...","ts":"2025-10-10T23:55:56+13:00","run_id":"run_20251010_235556_355313"}
+{"stage":"products","message":"Loading products...","ts":"2025-10-10T23:55:56+13:00","run_id":"run_20251010_235556_355313"}
+{"stage":"allocate","message":"Calculating allocations...","ts":"2025-10-10T23:55:56+13:00","run_id":"run_20251010_235556_355313"}
+{"stage":"allocate_init","message":"Allocating per product...","count":2,"run_id":"run_20251010_235556_355313"}
+{"stage":"allocate_progress","message":"Allocated P-DEMO-1","product_id":"P-DEMO-1","index":1,"total":2,"run_id":"run_20251010_235556_355313"}
+{"stage":"allocate_progress","message":"Allocated P-DEMO-2","product_id":"P-DEMO-2","index":2,"total":2,"run_id":"run_20251010_235556_355313"}
+{"stage":"done","message":"Run complete","done":true,"summary":{"total_products":2,"total_lines":6,"total_quantity":67,"outlets_affected":3},"profile":{"validate_config":0.02,"load_outlets":0.02,"load_products":0.01,"allocate_product_P-DEMO-1":0.03,"allocate_product_P-DEMO-2":0.02,"calculate_allocations":0.21},"outlet_perf_top":[{"outlet_id":"OUT-3","store_code":null,"name":"Demo Outlet 3","demand_calls":0,"demand_ms":0,"demand_avg_ms":0,"allocation_lines":2,"allocation_qty":24},{"outlet_id":"OUT-1","store_code":null,"name":"Demo Outlet 1","demand_calls":0,"demand_ms":0,"demand_avg_ms":0,"allocation_lines":2,"allocation_qty":23},{"outlet_id":"OUT-2","store_code":null,"name":"Demo Outlet 2","demand_calls":0,"demand_ms":0,"demand_avg_ms":0,"allocation_lines":2,"allocation_qty":20}],"ts":"2025-10-10T23:55:56+13:00","run_id":"run_20251010_235556_355313"}

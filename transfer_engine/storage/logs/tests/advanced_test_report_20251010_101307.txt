@@ -1,0 +1,17 @@
+[2025-10-10 10:13:07] ==========================================
+[2025-10-10 10:13:07] Advanced Test Suite Execution Started
+[2025-10-10 10:13:07] ==========================================
+[2025-10-10 10:13:07] PHP: PHP 8.1.33 (cli) (built: Jul  3 2025 16:23:26) (NTS)
+[2025-10-10 10:13:07] PHPUnit: PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.33
+Configuration: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/phpunit.xml
+
+..........                                                        10 / 10 (100%)
+
+Time: 00:00.030, Memory: 8.00 MB
+
+OK, but there were issues!
+Tests: 10, Assertions: 25, PHPUnit Deprecations: 1.
+[2025-10-10 10:13:07] Basic Suite: PASSED (0s)

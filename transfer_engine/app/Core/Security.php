@@ -116,13 +116,60 @@ class Security
             && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
     }
     
+    /**
+     * Sanitize input to prevent XSS, SQL injection, path traversal, command injection
+     * This is defensive - proper parameterized queries still required for SQL
+     */
     public static function sanitizeInput($input)
     {
         if (is_array($input)) {
             return array_map([self::class, 'sanitizeInput'], $input);
         }
         
-        return is_string($input) ? trim($input) : $input;
+        if (!is_string($input)) {
+            return $input;
+        }
+        
+        // Trim whitespace
+        $input = trim($input);
+        
+        // Remove null bytes
+        $input = str_replace("\0", '', $input);
+        
+        // Strip dangerous HTML attributes BEFORE encoding (more aggressive)
+        $dangerousAttrs = ['onerror', 'onload', 'onclick', 'onmouseover', 'onfocus', 'onblur'];
+        foreach ($dangerousAttrs as $attr) {
+            $input = preg_replace('/' . $attr . '\s*=/i', '', $input);
+        }
+        
+        // Remove script tags completely
+        $input = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $input);
+        
+        // HTML escape to prevent XSS
+        $input = htmlspecialchars($input, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        
+        // Remove common SQL injection patterns (defensive layer)
+        $sqlPatterns = [
+            '/;\s*DROP\s+TABLE/i',
+            '/;\s*DELETE\s+FROM/i',
+            '/;\s*TRUNCATE/i',
+            '/;\s*UPDATE\s+.*SET/i',
+            '/UNION\s+SELECT/i',
+            '/\/\*.*\*\//s', // SQL comments
+            '/--\s*$/m',     // SQL line comments
+        ];
+        foreach ($sqlPatterns as $pattern) {
+            $input = preg_replace($pattern, '', $input);
+        }
+        
+        // Remove path traversal attempts
+        $input = str_replace(['../', '..\\'], '', $input);
+        
+        // Remove command injection attempts (semicolons, pipes, spaces before rm/etc)
+        $input = preg_replace('/;\s*(rm|del|format|fdisk)/i', '', $input);
+        $input = str_replace(['|', '&', '$', '`', '>', '<', '\n', '\r'], '', $input);
+        
+        return $input;
     }
     
     public static function escapeHtml(?string $string): string

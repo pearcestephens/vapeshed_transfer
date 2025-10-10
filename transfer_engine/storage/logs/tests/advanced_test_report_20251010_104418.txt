@@ -1,0 +1,151 @@
+[2025-10-10 10:44:18] ==========================================
+[2025-10-10 10:44:18] Advanced Test Suite Execution Started
+[2025-10-10 10:44:18] ==========================================
+[2025-10-10 10:44:19] PHP: PHP 8.1.33 (cli) (built: Jul  3 2025 16:23:26) (NTS)
+[2025-10-10 10:44:19] PHPUnit: PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.33
+Configuration: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/phpunit.xml
+
+..........                                                        10 / 10 (100%)
+
+Time: 00:00.027, Memory: 8.00 MB
+
+OK, but there were issues!
+Tests: 10, Assertions: 25, PHPUnit Deprecations: 1.
+[2025-10-10 10:44:19] Basic Suite: PASSED (0s)
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.33
+Configuration: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/phpunit.xml
+
+..[2025-10-10 10:44:19] Security Suite: PASSED (0s)
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.33
+Configuration: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/phpunit.xml
+
+Database: Created new dedicated connection [127.0.0.1:3306:jcepnzzkmj:jcepnzzkmj]
+EEEEEEEEEE                                                        10 / 10 (100%)
+
+Time: 00:00.031, Memory: 10.00 MB
+
+There were 10 errors:
+
+1) Tests\Integration\TransferEngineIntegrationTest::testBasicTransferExecution
+mysqli_sql_exception: Field 'version' doesn't have a default value
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:201
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:85
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:31
+
+2) Tests\Integration\TransferEngineIntegrationTest::testTransferWithProductList
+mysqli_sql_exception: Field 'version' doesn't have a default value
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:201
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:85
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:31
+
+3) Tests\Integration\TransferEngineIntegrationTest::testAllocationFairness
+mysqli_sql_exception: Field 'version' doesn't have a default value
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:201
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:85
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:31
+
+4) Tests\Integration\TransferEngineIntegrationTest::testZeroWarehouseStockHandling
+mysqli_sql_exception: Field 'version' doesn't have a default value
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:201
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:85
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:31
+
+5) Tests\Integration\TransferEngineIntegrationTest::testDatabaseConnectionPooling
+mysqli_sql_exception: Field 'version' doesn't have a default value
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:201
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:85
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:31
+
+6) Tests\Integration\TransferEngineIntegrationTest::testConcurrentExecutionSafety
+mysqli_sql_exception: Field 'version' doesn't have a default value
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:201
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:85
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:31
+
+7) Tests\Integration\TransferEngineIntegrationTest::testConfigurationValidation
+mysqli_sql_exception: Field 'version' doesn't have a default value
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:201
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:85
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:31
+
+8) Tests\Integration\TransferEngineIntegrationTest::testDryRunMode
+mysqli_sql_exception: Field 'version' doesn't have a default value
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:201
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:85
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:31
+
+9) Tests\Integration\TransferEngineIntegrationTest::testMinLinesThreshold
+mysqli_sql_exception: Field 'version' doesn't have a default value
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:201
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:85
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:31
+
+10) Tests\Integration\TransferEngineIntegrationTest::testLoggerIntegration
+mysqli_sql_exception: Field 'version' doesn't have a default value
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:201
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:85
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:31
+
+ERRORS!
+Tests: 10, Assertions: 0, Errors: 10, PHPUnit Deprecations: 1.
+[2025-10-10 10:44:19] Integration Suite: PASSED (0s)
+
+
+An error occurred inside PHPUnit.
+
+Message:  Call to undefined method PHPUnit\Runner\TestSuiteLoader::markTestIncomplete()
+Location: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:4
+
+#0 /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/vendor/phpunit/phpunit/src/Runner/TestSuiteLoader.php(115): require_once()
+#1 /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/vendor/phpunit/phpunit/src/Runner/TestSuiteLoader.php(48): PHPUnit\Runner\TestSuiteLoader->loadSuiteClassFile()
+#2 /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/vendor/phpunit/phpunit/src/Framework/TestSuite.php(251): PHPUnit\Runner\TestSuiteLoader->load()
+#3 /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/vendor/phpunit/phpunit/src/Framework/TestSuite.php(269): PHPUnit\Framework\TestSuite->addTestFile()
+#4 /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/vendor/phpunit/phpunit/src/TextUI/Configuration/Xml/TestSuiteMapper.php(102): PHPUnit\Framework\TestSuite->addTestFiles()
+#5 /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/vendor/phpunit/phpunit/src/TextUI/Configuration/TestSuiteBuilder.php(79): PHPUnit\TextUI\XmlConfiguration\TestSuiteMapper->map()
+#6 /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/vendor/phpunit/phpunit/src/TextUI/Application.php(394): PHPUnit\TextUI\Configuration\TestSuiteBuilder->build()
+#7 /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/vendor/phpunit/phpunit/src/TextUI/Application.php(114): PHPUnit\TextUI\Application->buildTestSuite()
+#8 /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
+#9 /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/vendor/bin/phpunit(122): include('...')
+#10 {main}
+[2025-10-10 10:44:19] Performance Suite: PASSED (0s)
+
+
+An error occurred inside PHPUnit.
+
+Message:  syntax error, unexpected token "{"
+Location: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php:21
+
+#0 /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/vendor/phpunit/phpunit/src/Runner/TestSuiteLoader.php(48): PHPUnit\Runner\TestSuiteLoader->loadSuiteClassFile()
+#1 /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/vendor/phpunit/phpunit/src/Framework/TestSuite.php(251): PHPUnit\Runner\TestSuiteLoader->load()
+#2 /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/vendor/phpunit/phpunit/src/Framework/TestSuite.php(269): PHPUnit\Framework\TestSuite->addTestFile()
+#3 /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/vendor/phpunit/phpunit/src/TextUI/Configuration/Xml/TestSuiteMapper.php(102): PHPUnit\Framework\TestSuite->addTestFiles()
+#4 /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/vendor/phpunit/phpunit/src/TextUI/Configuration/TestSuiteBuilder.php(79): PHPUnit\TextUI\XmlConfiguration\TestSuiteMapper->map()
+#5 /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/vendor/phpunit/phpunit/src/TextUI/Application.php(394): PHPUnit\TextUI\Configuration\TestSuiteBuilder->build()
+#6 /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/vendor/phpunit/phpunit/src/TextUI/Application.php(114): PHPUnit\TextUI\Application->buildTestSuite()
+#7 /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/vendor/phpunit/phpunit/phpunit(104): PHPUnit\TextUI\Application->run()
+#8 /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/vendor/bin/phpunit(122): include('...')
+#9 {main}
+[2025-10-10 10:44:19] Chaos Suite: PASSED (0s)
+[2025-10-10 10:44:19] ==========================================
+[2025-10-10 10:44:19] Test Summary
+[2025-10-10 10:44:19] Total: 5 | Passed: 5 | Failed: 0
+[2025-10-10 10:44:19] Duration: 0s
+[2025-10-10 10:44:19] ==========================================
+[2025-10-10 10:44:19] Success Rate: 100%

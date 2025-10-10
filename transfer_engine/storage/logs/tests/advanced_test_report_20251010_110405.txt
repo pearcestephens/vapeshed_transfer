@@ -1,0 +1,199 @@
+[2025-10-10 11:04:05] ==========================================
+[2025-10-10 11:04:05] Advanced Test Suite Execution Started
+[2025-10-10 11:04:05] ==========================================
+[2025-10-10 11:04:05] PHP: PHP 8.1.33 (cli) (built: Jul  3 2025 16:23:26) (NTS)
+[2025-10-10 11:04:05] PHPUnit: PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.33
+Configuration: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/phpunit.xml
+
+..........                                                        10 / 10 (100%)
+
+Time: 00:00.015, Memory: 10.00 MB
+
+OK, but there were issues!
+Tests: 10, Assertions: 25, PHPUnit Deprecations: 1.
+[2025-10-10 11:04:05] Basic Suite: PASSED (0s)
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.33
+Configuration: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/phpunit.xml
+
+..[2025-10-10 11:04:05] Security Suite: PASSED (0s)
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.33
+Configuration: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/phpunit.xml
+
+Database: Created new dedicated connection [127.0.0.1:3306:jcepnzzkmj:jcepnzzkmj]
+..S.I..IF.                                                        10 / 10 (100%)
+
+Time: 00:00.044, Memory: 10.00 MB
+
+There was 1 failure:
+
+1) Tests\Integration\TransferEngineIntegrationTest::testMinLinesThreshold
+Should respect min_lines threshold
+Failed asserting that false is true.
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Integration/TransferEngineIntegrationTest.php:337
+
+FAILURES!
+Tests: 10, Assertions: 15, Failures: 1, PHPUnit Deprecations: 1, Skipped: 1, Incomplete: 2.
+[2025-10-10 11:04:06] Integration Suite: PASSED (1s)
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.33
+Configuration: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/phpunit.xml
+
+
+[BASELINE] Single request: 1.4750957489014ms
+
+[PERF] Duration: 3.65ms | Memory: 0MB | Peak: 8MB
+R
+[SEQUENTIAL] 10 requests:
+  Total: 12.048006057739ms
+  Avg: 0.60808658599854ms
+  Max: 0.80990791320801ms
+
+[PERF] Duration: 12.18ms | Memory: 0MB | Peak: 8MB
+R
+[MEMORY] Growth: 0MB (0%)
+
+[PERF] Duration: 10.97ms | Memory: 0MB | Peak: 8MB
+R
+[PERF] Duration: 4.99ms | Memory: 2MB | Peak: 10MB
+R
+[RAPID] 25 requests in 13.140201568604ms
+  Throughput: 1902.56 req/sec
+  Errors: 0
+
+[PERF] Duration: 13.68ms | Memory: 0MB | Peak: 10MB
+R
+[LARGE SET]
+  Duration: 0.59890747070312ms
+  Memory: 0MB
+  Allocations: 2
+
+[PERF] Duration: 0.71ms | Memory: 0MB | Peak: 10MB
+R
+[CONSISTENCY]
+  Avg: 0.66ms
+  StdDev: 0.28ms
+  CV: 41.96%
+
+[PERF] Duration: 10.08ms | Memory: 0MB | Peak: 10MB
+R                                                             7 / 7 (100%)
+
+Time: 00:00.067, Memory: 10.00 MB
+
+There were 7 risky tests:
+
+1) LoadTest::testSingleRequestPerformance
+Test code or tested code printed unexpected output: 
+[BASELINE] Single request: 1.4750957489014ms
+
+[PERF] Duration: 3.65ms | Memory: 0MB | Peak: 8MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:49
+
+2) LoadTest::testSequentialRequests
+Test code or tested code printed unexpected output: 
+[SEQUENTIAL] 10 requests:
+  Total: 12.048006057739ms
+  Avg: 0.60808658599854ms
+  Max: 0.80990791320801ms
+
+[PERF] Duration: 12.18ms | Memory: 0MB | Peak: 8MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:75
+
+3) LoadTest::testMemoryLeakDetection
+Test code or tested code printed unexpected output: 
+[MEMORY] Growth: 0MB (0%)
+
+[PERF] Duration: 10.97ms | Memory: 0MB | Peak: 8MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:115
+
+4) LoadTest::testConnectionPoolUnderLoad
+Test code or tested code printed unexpected output: 
+[PERF] Duration: 4.99ms | Memory: 2MB | Peak: 10MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:159
+
+5) LoadTest::testRapidSequentialExecution
+Test code or tested code printed unexpected output: 
+[RAPID] 25 requests in 13.140201568604ms
+  Throughput: 1902.56 req/sec
+  Errors: 0
+
+[PERF] Duration: 13.68ms | Memory: 0MB | Peak: 10MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:200
+
+6) LoadTest::testLargeResultSetHandling
+Test code or tested code printed unexpected output: 
+[LARGE SET]
+  Duration: 0.59890747070312ms
+  Memory: 0MB
+  Allocations: 2
+
+[PERF] Duration: 0.71ms | Memory: 0MB | Peak: 10MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:238
+
+7) LoadTest::testResponseTimeConsistency
+Test code or tested code printed unexpected output: 
+[CONSISTENCY]
+  Avg: 0.66ms
+  StdDev: 0.28ms
+  CV: 41.96%
+
+[PERF] Duration: 10.08ms | Memory: 0MB | Peak: 10MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:274
+
+OK, but there were issues!
+Tests: 7, Assertions: 18, PHPUnit Deprecations: 1, Incomplete: 1, Risky: 7.
+[2025-10-10 11:04:06] Performance Suite: PASSED (0s)
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.33
+Configuration: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/phpunit.xml
+
+I.Database: Created new dedicated connection [127.0.0.1:3306:jcepnzzkmj:jcepnzzkmj]
+E...I
+[STABILITY] 50 executions: 50 success, 0 errors
+RII                                                        10 / 10 (100%)
+
+Time: 00:00.064, Memory: 10.00 MB
+
+There was 1 error:
+
+1) Tests\Chaos\ChaosTest::testNegativeStockHandling
+mysqli_sql_exception: Unknown column 'vend_id' in 'field list'
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/app/Core/Database.php:180
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php:97
+
+--
+
+There was 1 risky test:
+
+1) Tests\Chaos\ChaosTest::testRepeatedExecutionStability
+Test code or tested code printed unexpected output: 
+[STABILITY] 50 executions: 50 success, 0 errors
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php:234
+
+ERRORS!
+Tests: 10, Assertions: 13, Errors: 1, PHPUnit Deprecations: 1, Incomplete: 4, Risky: 1.
+[2025-10-10 11:04:06] Chaos Suite: PASSED (0s)
+[2025-10-10 11:04:06] ==========================================
+[2025-10-10 11:04:06] Test Summary
+[2025-10-10 11:04:06] Total: 5 | Passed: 5 | Failed: 0
+[2025-10-10 11:04:06] Duration: 1s
+[2025-10-10 11:04:06] ==========================================
+[2025-10-10 11:04:06] Success Rate: 100%

@@ -2,7 +2,7 @@
 /**
  * Configuration API Controller
  * Handles system and dashboard configuration
- * 
+ *
  * @package VapeshedTransfer
  * @author  Pearce Stephens <pearce.stephens@ecigdis.co.nz>
  */
@@ -20,14 +20,14 @@ class ConfigController extends BaseController
 {
     private Database $db;
     private ConfigManager $configManager;
-    
+
     public function __construct()
     {
         parent::__construct();
         $this->db = Database::getInstance();
         $this->configManager = new ConfigManager();
     }
-    
+
     /**
      * Get dashboard configuration
      */
@@ -50,14 +50,14 @@ class ConfigController extends BaseController
                 'widgets' => $this->getDashboardWidgets(),
                 'layout' => $this->getDashboardLayout()
             ];
-            
+
             return $this->apiResponse(true, $config);
-            
+
         } catch (Exception $e) {
             return $this->apiResponse(false, null, null, $e->getMessage());
         }
     }
-    
+
     /**
      * Update dashboard configuration
      */
@@ -65,33 +65,33 @@ class ConfigController extends BaseController
     {
         try {
             $input = $this->getJsonInput();
-            
+
             // Validate input
             $this->validateDashboardConfig($input);
-            
+
             // Update each configuration setting
             foreach ($input as $key => $value) {
                 $this->configManager->set("dashboard.{$key}", $value);
             }
-            
+
             // Save configuration
             $this->configManager->save();
-            
+
             // Log configuration change
             $this->logger->info('Dashboard configuration updated', [
                 'updated_fields' => array_keys($input),
                 'user' => $_SESSION['user_id'] ?? 'system'
             ]);
-            
+
             return $this->apiResponse(true, $input, [
                 'message' => 'Dashboard configuration updated successfully'
             ]);
-            
+
         } catch (Exception $e) {
             return $this->apiResponse(false, null, null, $e->getMessage());
         }
     }
-    
+
     /**
      * Get system configuration
      */
@@ -115,14 +115,14 @@ class ConfigController extends BaseController
                 'notification_email' => $this->configManager->get('system.notification_email', ''),
                 'emergency_contacts' => $this->getEmergencyContacts()
             ];
-            
+
             return $this->apiResponse(true, $config);
-            
+
         } catch (Exception $e) {
             return $this->apiResponse(false, null, null, $e->getMessage());
         }
     }
-    
+
     /**
      * Update system configuration
      */
@@ -130,43 +130,43 @@ class ConfigController extends BaseController
     {
         try {
             $input = $this->getJsonInput();
-            
+
             // Validate input
             $this->validateSystemConfig($input);
-            
+
             // Special handling for sensitive settings
             if (isset($input['browse_mode'])) {
                 $this->handleBrowseModeChange($input['browse_mode']);
             }
-            
+
             if (isset($input['maintenance_mode'])) {
                 $this->handleMaintenanceModeChange($input['maintenance_mode']);
             }
-            
+
             // Update configuration
             foreach ($input as $key => $value) {
                 $this->configManager->set("system.{$key}", $value);
             }
-            
+
             $this->configManager->save();
-            
+
             // Log critical configuration changes
             $this->logger->warning('System configuration updated', [
                 'updated_fields' => array_keys($input),
                 'user' => $_SESSION['user_id'] ?? 'system',
                 'ip' => $_SERVER['REMOTE_ADDR'] ?? 'unknown'
             ]);
-            
+
             return $this->apiResponse(true, $input, [
                 'message' => 'System configuration updated successfully',
                 'restart_required' => $this->requiresRestart($input)
             ]);
-            
+
         } catch (Exception $e) {
             return $this->apiResponse(false, null, null, $e->getMessage());
         }
     }
-    
+
     /**
      * Get engine configuration
      */
@@ -202,14 +202,14 @@ class ConfigController extends BaseController
                     'notification_threshold' => $this->configManager->get('engines.transfer.notification_threshold', 1000.0)
                 ]
             ];
-            
+
             return $this->apiResponse(true, $config);
-            
+
         } catch (Exception $e) {
             return $this->apiResponse(false, null, null, $e->getMessage());
         }
     }
-    
+
     /**
      * Update engine configuration
      */
@@ -217,34 +217,34 @@ class ConfigController extends BaseController
     {
         try {
             $input = $this->getJsonInput();
-            
+
             // Validate input
             $this->validateEngineConfig($input);
-            
+
             // Update engine configurations
             foreach ($input as $engine => $settings) {
                 foreach ($settings as $key => $value) {
                     $this->configManager->set("engines.{$engine}.{$key}", $value);
                 }
             }
-            
+
             $this->configManager->save();
-            
+
             // Log engine configuration changes
             $this->logger->info('Engine configuration updated', [
                 'engines' => array_keys($input),
                 'user' => $_SESSION['user_id'] ?? 'system'
             ]);
-            
+
             return $this->apiResponse(true, $input, [
                 'message' => 'Engine configuration updated successfully'
             ]);
-            
+
         } catch (Exception $e) {
             return $this->apiResponse(false, null, null, $e->getMessage());
         }
     }
-    
+
     /**
      * Get user configuration
      */
@@ -252,7 +252,7 @@ class ConfigController extends BaseController
     {
         try {
             $userId = $_SESSION['user_id'] ?? 'guest';
-            
+
             $config = [
                 'theme' => $this->getUserSetting($userId, 'theme', 'dark'),
                 'language' => $this->getUserSetting($userId, 'language', 'en'),
@@ -272,14 +272,14 @@ class ConfigController extends BaseController
                     'auto_email' => $this->getUserSetting($userId, 'reports.auto_email', false)
                 ]
             ];
-            
+
             return $this->apiResponse(true, $config);
-            
+
         } catch (Exception $e) {
             return $this->apiResponse(false, null, null, $e->getMessage());
         }
     }
-    
+
     /**
      * Update user configuration
      */
@@ -288,24 +288,24 @@ class ConfigController extends BaseController
         try {
             $input = $this->getJsonInput();
             $userId = $_SESSION['user_id'] ?? 'guest';
-            
+
             // Validate input
             $this->validateUserConfig($input);
-            
+
             // Update user settings
             foreach ($input as $key => $value) {
                 $this->setUserSetting($userId, $key, $value);
             }
-            
+
             return $this->apiResponse(true, $input, [
                 'message' => 'User configuration updated successfully'
             ]);
-            
+
         } catch (Exception $e) {
             return $this->apiResponse(false, null, null, $e->getMessage());
         }
     }
-    
+
     /**
      * Get dashboard widgets configuration
      */
@@ -339,7 +339,7 @@ class ConfigController extends BaseController
             ]
         ];
     }
-    
+
     /**
      * Get dashboard layout configuration
      */
@@ -356,7 +356,7 @@ class ConfigController extends BaseController
             ]
         ];
     }
-    
+
     /**
      * Get emergency contacts
      */
@@ -372,7 +372,7 @@ class ConfigController extends BaseController
             ]
         ];
     }
-    
+
     /**
      * Validate dashboard configuration
      */
@@ -384,14 +384,14 @@ class ConfigController extends BaseController
                 throw new Exception('Refresh interval must be between 5 and 300 seconds');
             }
         }
-        
+
         if (isset($config['theme'])) {
             $validThemes = ['light', 'dark', 'auto'];
             if (!in_array($config['theme'], $validThemes)) {
                 throw new Exception('Invalid theme. Must be one of: ' . implode(', ', $validThemes));
             }
         }
-        
+
         if (isset($config['decimal_places'])) {
             $places = (int)$config['decimal_places'];
             if ($places < 0 || $places > 4) {
@@ -399,7 +399,7 @@ class ConfigController extends BaseController
             }
         }
     }
-    
+
     /**
      * Validate system configuration
      */
@@ -411,14 +411,14 @@ class ConfigController extends BaseController
                 throw new Exception('Max concurrent transfers must be between 1 and 100');
             }
         }
-        
+
         if (isset($config['max_concurrent_crawlers'])) {
             $max = (int)$config['max_concurrent_crawlers'];
             if ($max < 1 || $max > 5) {
                 throw new Exception('Max concurrent crawlers must be between 1 and 5');
             }
         }
-        
+
         if (isset($config['session_timeout'])) {
             $timeout = (int)$config['session_timeout'];
             if ($timeout < 300 || $timeout > 86400) {
@@ -426,7 +426,7 @@ class ConfigController extends BaseController
             }
         }
     }
-    
+
     /**
      * Validate engine configuration
      */
@@ -438,7 +438,7 @@ class ConfigController extends BaseController
                 throw new Exception('Max transfers per run must be between 1 and 1000');
             }
         }
-        
+
         if (isset($config['crawler_engine']['timeout_seconds'])) {
             $timeout = (int)$config['crawler_engine']['timeout_seconds'];
             if ($timeout < 30 || $timeout > 600) {
@@ -446,7 +446,7 @@ class ConfigController extends BaseController
             }
         }
     }
-    
+
     /**
      * Validate user configuration
      */
@@ -458,7 +458,7 @@ class ConfigController extends BaseController
                 throw new Exception('Invalid theme selection');
             }
         }
-        
+
         if (isset($config['language'])) {
             $validLanguages = ['en', 'es', 'fr', 'de'];
             if (!in_array($config['language'], $validLanguages)) {
@@ -466,7 +466,7 @@ class ConfigController extends BaseController
             }
         }
     }
-    
+
     /**
      * Handle browse mode change
      */
@@ -475,18 +475,18 @@ class ConfigController extends BaseController
         if ($browseMode) {
             // Activate browse mode - disable all modification operations
             $this->logger->warning('Browse mode activated - system is now read-only');
-            
+
             // Set environment variable
             $_ENV['BROWSE_MODE'] = 'true';
-            
+
         } else {
             // Deactivate browse mode
             $this->logger->info('Browse mode deactivated - system is now writable');
-            
+
             unset($_ENV['BROWSE_MODE']);
         }
     }
-    
+
     /**
      * Handle maintenance mode change
      */
@@ -494,15 +494,15 @@ class ConfigController extends BaseController
     {
         if ($maintenanceMode) {
             $this->logger->warning('Maintenance mode activated');
-            
+
             // Stop all background processes
             // Could implement process stopping here
-            
+
         } else {
             $this->logger->info('Maintenance mode deactivated');
         }
     }
-    
+
     /**
      * Check if configuration change requires restart
      */
@@ -514,10 +514,10 @@ class ConfigController extends BaseController
             'debug_mode',
             'log_level'
         ];
-        
+
         return !empty(array_intersect(array_keys($config), $restartRequired));
     }
-    
+
     /**
      * Get user setting
      */
@@ -527,28 +527,28 @@ class ConfigController extends BaseController
         $stmt = $this->db->getConnection()->prepare($sql);
         $stmt->bind_param('ss', $userId, $key);
         $stmt->execute();
-        
+
         $result = $stmt->get_result();
         if ($row = $result->fetch_assoc()) {
             return json_decode($row['setting_value'], true);
         }
-        
+
         return $default;
     }
-    
+
     /**
      * Set user setting
      */
     private function setUserSetting(string $userId, string $key, mixed $value): void
     {
         $sql = "
-            INSERT INTO user_settings (user_id, setting_key, setting_value, updated_at) 
+            INSERT INTO user_settings (user_id, setting_key, setting_value, updated_at)
             VALUES (?, ?, ?, NOW())
-            ON DUPLICATE KEY UPDATE 
+            ON DUPLICATE KEY UPDATE
             setting_value = VALUES(setting_value),
             updated_at = NOW()
         ";
-        
+
         $stmt = $this->db->getConnection()->prepare($sql);
         $encodedValue = json_encode($value);
         $stmt->bind_param('sss', $userId, $key, $encodedValue);

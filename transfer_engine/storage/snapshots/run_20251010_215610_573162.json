@@ -1,0 +1,207 @@
+{
+    "run_id": "run_20251010_215610_573162",
+    "timestamp": "2025-10-10T21:56:10+13:00",
+    "execution_time_ms": 0.49,
+    "config": {
+        "dry": 0,
+        "warehouse_id": "1",
+        "warehouse_web_outlet_id": "020b2c2a-4671-11f0-e200-8e55f1689700",
+        "skip_outlets": "",
+        "min_lines": 5,
+        "max_per_product": 30,
+        "min_cap_per_outlet": 2,
+        "top_k_outlets": 0,
+        "dynamic_top_k": 0,
+        "reserve_percent": 0.12,
+        "reserve_min_units": 3,
+        "reserve_floor_units": 50,
+        "mode": "balance_stock_only",
+        "seed_qty_zero": 3,
+        "topup_low_to": 10,
+        "mid_topup": 5,
+        "proportional_share": 0.45,
+        "max_skus_per_store": 25,
+        "brand_supplier_mode": "and",
+        "supplier_flag": "transferring",
+        "exclude_name_like": "",
+        "hub_products_limit": 0,
+        "limit_products": 0,
+        "max_products_cap": 2000,
+        "min_line_qty": 3,
+        "no_send_if_atleast": 0,
+        "snap_multiple": 10,
+        "snap_delta": 1,
+        "exclude_codes": [],
+        "turnover_min_pct": 3,
+        "turnover_max_pct": 10,
+        "default_turnover_pct": 7,
+        "weight_method": "power",
+        "weight_gamma": 1.8,
+        "weight_epsilon": 1,
+        "softmax_tau": 6,
+        "weight_mix_beta": 0.8,
+        "compare_mode": "quartiles",
+        "enable_tier_caps": 1,
+        "tier_caps": {
+            "A": 6,
+            "B": 4,
+            "C": 3
+        },
+        "outlet_tiers": [],
+        "seed_on_new": 1,
+        "seed_on_high_stock": 1,
+        "high_stock_threshold": 500,
+        "seed_qty_default": 1,
+        "seed_qty_high_stock": 2,
+        "seed_qty_by_tier": {
+            "A": 3,
+            "B": 1,
+            "C": 1
+        },
+        "disable_top_k_on_seed": 1,
+        "max_lines_per_store": 25,
+        "velocity_seed_threshold": 0.1,
+        "source_outlet_id": "WAREHOUSE",
+        "algorithm": "proportional",
+        "test_mode": true
+    },
+    "outlets": [
+        {
+            "outlet_id": "OUT-1",
+            "name": "Demo Outlet 1"
+        },
+        {
+            "outlet_id": "OUT-2",
+            "name": "Demo Outlet 2"
+        },
+        {
+            "outlet_id": "OUT-3",
+            "name": "Demo Outlet 3"
+        }
+    ],
+    "products": [
+        {
+            "product_id": "TEST-008",
+            "warehouse_stock": 100,
+            "outlet_stocks": {
+                "OUT-1": 0
+            },
+            "sales_velocity": {
+                "OUT-1": 10
+            }
+        }
+    ],
+    "allocations": {
+        "TEST-008": [
+            {
+                "outlet_id": "OUT-1",
+                "product_id": "TEST-008",
+                "quantity": 14,
+                "demand_score": 0,
+                "proportion": 0,
+                "capped": false
+            },
+            {
+                "outlet_id": "OUT-2",
+                "product_id": "TEST-008",
+                "quantity": 14,
+                "demand_score": 0,
+                "proportion": 0,
+                "capped": false
+            },
+            {
+                "outlet_id": "OUT-3",
+                "product_id": "TEST-008",
+                "quantity": 14,
+                "demand_score": 0,
+                "proportion": 0,
+                "capped": false
+            }
+        ]
+    },
+    "summary": {
+        "total_products": 1,
+        "total_lines": 3,
+        "total_quantity": 42,
+        "outlets_affected": 3
+    },
+    "dry_run": 0,
+    "kill_switch_active": false,
+    "test_mode": true,
+    "profile": {
+        "validate_config": 0.02,
+        "load_outlets": 0.02,
+        "load_products": 0,
+        "allocate_product_TEST-008": 0.03,
+        "calculate_allocations": 0.1
+    },
+    "outlet_perf": [
+        {
+            "outlet_id": "OUT-1",
+            "store_code": null,
+            "name": "Demo Outlet 1",
+            "demand_calls": 0,
+            "demand_ms": 0,
+            "demand_avg_ms": 0,
+            "allocation_lines": 1,
+            "allocation_qty": 14
+        },
+        {
+            "outlet_id": "OUT-2",
+            "store_code": null,
+            "name": "Demo Outlet 2",
+            "demand_calls": 0,
+            "demand_ms": 0,
+            "demand_avg_ms": 0,
+            "allocation_lines": 1,
+            "allocation_qty": 14
+        },
+        {
+            "outlet_id": "OUT-3",
+            "store_code": null,
+            "name": "Demo Outlet 3",
+            "demand_calls": 0,
+            "demand_ms": 0,
+            "demand_avg_ms": 0,
+            "allocation_lines": 1,
+            "allocation_qty": 14
+        }
+    ],
+    "decision_trace": {
+        "TEST-008": {
+            "product": [],
+            "outlets": [
+                {
+                    "outlet_id": "OUT-1",
+                    "store_code": null,
+                    "name": "Demo Outlet 1",
+                    "reason": "allocated_stock_only",
+                    "dest_stock": 0,
+                    "demand": 0,
+                    "proportion": 0,
+                    "allocated_qty": 14
+                },
+                {
+                    "outlet_id": "OUT-2",
+                    "store_code": null,
+                    "name": "Demo Outlet 2",
+                    "reason": "allocated_stock_only",
+                    "dest_stock": 0,
+                    "demand": 0,
+                    "proportion": 0,
+                    "allocated_qty": 14
+                },
+                {
+                    "outlet_id": "OUT-3",
+                    "store_code": null,
+                    "name": "Demo Outlet 3",
+                    "reason": "allocated_stock_only",
+                    "dest_stock": 0,
+                    "demand": 0,
+                    "proportion": 0,
+                    "allocated_qty": 14
+                }
+            ]
+        }
+    }
+}

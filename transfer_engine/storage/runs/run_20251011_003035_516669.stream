@@ -1,0 +1,3 @@
+{"stage":"start","message":"Initializing engine...","ts":"2025-10-11T00:30:35+13:00","run_id":"run_20251011_003035_516669"}
+{"stage":"outlets","message":"Loading outlets...","ts":"2025-10-11T00:30:35+13:00","run_id":"run_20251011_003035_516669"}
+{"stage":"error","message":"No eligible outlets found for transfer","error":true,"ts":"2025-10-11T00:30:35+13:00","run_id":"run_20251011_003035_516669"}

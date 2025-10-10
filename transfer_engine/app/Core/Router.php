@@ -14,32 +14,40 @@ class Router
 {
     private array $routes = [];
     
-    public function get(string $path, string $handler): void
+    public function get(string $path, callable|string $handler): void
     {
         $this->addRoute('GET', $path, $handler);
     }
     
-    public function post(string $path, string $handler): void
+    public function post(string $path, callable|string $handler): void
     {
         $this->addRoute('POST', $path, $handler);
     }
     
-    public function put(string $path, string $handler): void
+    public function put(string $path, callable|string $handler): void
     {
         $this->addRoute('PUT', $path, $handler);
     }
     
-    public function delete(string $path, string $handler): void
+    public function patch(string $path, callable|string $handler): void
+    {
+        $this->addRoute('PATCH', $path, $handler);
+    }
+    
+    public function delete(string $path, callable|string $handler): void
     {
         $this->addRoute('DELETE', $path, $handler);
     }
     
-    private function addRoute(string $method, string $path, string $handler): void
+    private function addRoute(string $method, string $path, callable|string $handler): void
     {
+        [$pattern, $params] = $this->buildPattern($path);
         $this->routes[] = [
             'method' => $method,
             'path' => $path,
-            'handler' => $handler
+            'handler' => $handler,
+            'pattern' => $pattern,
+            'params' => $params
         ];
     }
     
@@ -60,8 +68,12 @@ class Router
         }
         
         foreach ($this->routes as $route) {
-            if ($route['method'] === $requestMethod && $this->pathMatches($route['path'], $requestPath)) {
-                $this->callHandler($route['handler']);
+            if ($route['method'] !== $requestMethod) {
+                continue;
+            }
+            $params = $this->matchRoute($route['pattern'], $route['params'], $requestPath);
+            if ($params !== null) {
+                $this->callHandler($route['handler'], $params);
                 return;
             }
         }
@@ -71,23 +83,35 @@ class Router
         include APP_ROOT . '/resources/views/errors/404.php';
     }
     
-    private function pathMatches(string $routePath, string $requestPath): bool
+    private function matchRoute(string $pattern, array $paramNames, string $requestPath): ?array
     {
-        // Simple exact match for now
-        // TODO: Add parameter support like /user/{id}
-        return $routePath === $requestPath;
+        if (!preg_match($pattern, $requestPath, $matches)) {
+            return null;
+        }
+
+        array_shift($matches);
+        if (empty($matches)) {
+            return [];
+        }
+
+        $params = [];
+        foreach ($matches as $index => $value) {
+            $key = $paramNames[$index] ?? (string)$index;
+            $params[$key] = $value;
+        }
+
+        return $params;
     }
     
-    private function callHandler(string $handler): void
+    private function callHandler(callable|string $handler, array $params = []): void
     {
-        list($controllerName, $methodName) = explode('@', $handler);
-        
-        // Handle API controllers in subdirectory
-        if (strpos($controllerName, 'Api\\') === 0) {
-            $controllerClass = 'App\\Controllers\\' . $controllerName;
-        } else {
-            $controllerClass = 'App\\Controllers\\' . $controllerName;
+        if (is_callable($handler)) {
+            call_user_func_array($handler, $params);
+            return;
         }
+
+        [$controllerName, $methodName] = explode('@', $handler);
+        $controllerClass = 'App\\Controllers\\' . $controllerName;
         
         if (!class_exists($controllerClass)) {
             throw new \Exception("Controller {$controllerClass} not found");
@@ -99,6 +123,19 @@ class Router
             throw new \Exception("Method {$methodName} not found in {$controllerClass}");
         }
         
-        $controller->$methodName();
+        call_user_func_array([$controller, $methodName], array_values($params));
+    }
+
+    private function buildPattern(string $path): array
+    {
+        $paramNames = [];
+        $pattern = preg_replace_callback('/\{([^}]+)\}/', static function (array $matches) use (&$paramNames) {
+            $paramNames[] = $matches[1];
+            return '([^/]+)';
+        }, $path);
+
+        $pattern = '#^' . str_replace('/', '\/', $pattern) . '$#';
+
+        return [$pattern, $paramNames];
     }
 }

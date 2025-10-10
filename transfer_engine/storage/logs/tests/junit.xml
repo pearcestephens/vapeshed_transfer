@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/phpunit.xml" tests="10" assertions="22" errors="0" failures="0" skipped="3" time="0.053774">
+    <testsuite name="Chaos" tests="10" assertions="22" errors="0" failures="0" skipped="3" time="0.053774">
+      <testsuite name="Tests\Chaos\ChaosTest" file="/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php" tests="10" assertions="22" errors="0" failures="0" skipped="3" time="0.053774">
+        <testcase name="testMissingWarehouseHandling" file="/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php" line="32" class="Tests\Chaos\ChaosTest" classname="Tests.Chaos.ChaosTest" assertions="0" time="0.008629">
+          <skipped/>
+        </testcase>
+        <testcase name="testZeroProductsScenario" file="/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php" line="55" class="Tests\Chaos\ChaosTest" classname="Tests.Chaos.ChaosTest" assertions="3" time="0.003316"/>
+        <testcase name="testNegativeStockHandling" file="/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php" line="79" class="Tests\Chaos\ChaosTest" classname="Tests.Chaos.ChaosTest" assertions="0" time="0.000258">
+          <skipped/>
+        </testcase>
+        <testcase name="testConcurrentExecutionSafety" file="/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php" line="118" class="Tests\Chaos\ChaosTest" classname="Tests.Chaos.ChaosTest" assertions="5" time="0.005883"/>
+        <testcase name="testKillSwitchActivation" file="/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php" line="150" class="Tests\Chaos\ChaosTest" classname="Tests.Chaos.ChaosTest" assertions="1" time="0.001774"/>
+        <testcase name="testInvalidConfigurationCombinations" file="/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php" line="181" class="Tests\Chaos\ChaosTest" classname="Tests.Chaos.ChaosTest" assertions="2" time="0.001410"/>
+        <testcase name="testLargeProductListHandling" file="/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php" line="203" class="Tests\Chaos\ChaosTest" classname="Tests.Chaos.ChaosTest" assertions="0" time="0.000283">
+          <skipped/>
+        </testcase>
+        <testcase name="testRepeatedExecutionStability" file="/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php" line="235" class="Tests\Chaos\ChaosTest" classname="Tests.Chaos.ChaosTest" assertions="2" time="0.026519">
+          <system-out>
+[STABILITY] 50 executions: 50 success, 0 errors
+</system-out>
+        </testcase>
+        <testcase name="testDatabaseConnectionRecovery" file="/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php" line="270" class="Tests\Chaos\ChaosTest" classname="Tests.Chaos.ChaosTest" assertions="5" time="0.003920">
+          <system-out>
+[RECOVERY] Auto-reconnect: Success (closed 0 connection(s))
+</system-out>
+        </testcase>
+        <testcase name="testResourceCleanupAfterErrors" file="/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php" line="298" class="Tests\Chaos\ChaosTest" classname="Tests.Chaos.ChaosTest" assertions="4" time="0.001783">
+          <system-out>
+[CLEANUP] Errors handled: 4/{4}
+  Initial connections: 0
+  Final connections: 0
+</system-out>
+        </testcase>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>

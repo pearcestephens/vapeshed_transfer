@@ -1,0 +1,214 @@
+[2025-10-10 11:29:06] ==========================================
+[2025-10-10 11:29:06] Advanced Test Suite Execution Started
+[2025-10-10 11:29:06] ==========================================
+[2025-10-10 11:29:06] PHP: PHP 8.1.33 (cli) (built: Jul  3 2025 16:23:26) (NTS)
+[2025-10-10 11:29:06] PHPUnit: PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.33
+Configuration: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/phpunit.xml
+
+..........                                                        10 / 10 (100%)
+
+Time: 00:00.015, Memory: 10.00 MB
+
+OK, but there were issues!
+Tests: 10, Assertions: 25, PHPUnit Deprecations: 1.
+[2025-10-10 11:29:07] Basic Suite: PASSED (1s)
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.33
+Configuration: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/phpunit.xml
+
+..[2025-10-10 11:29:07] Security Suite: PASSED (0s)
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.33
+Configuration: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/phpunit.xml
+
+Database: Created new dedicated connection [127.0.0.1:3306:jcepnzzkmj:jcepnzzkmj]
+..S....II.                                                        10 / 10 (100%)
+
+Time: 00:00.047, Memory: 10.00 MB
+
+OK, but there were issues!
+Tests: 10, Assertions: 17, PHPUnit Deprecations: 1, Skipped: 1, Incomplete: 2.
+[2025-10-10 11:29:07] Integration Suite: PASSED (0s)
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.33
+Configuration: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/phpunit.xml
+
+
+[BASELINE] Single request: 1.5509128570557ms
+
+[PERF] Duration: 3.71ms | Memory: 0MB | Peak: 8MB
+R
+[SEQUENTIAL] 10 requests:
+  Total: 12.530088424683ms
+  Avg: 0.63774585723877ms
+  Max: 0.77199935913086ms
+
+[PERF] Duration: 12.66ms | Memory: 0MB | Peak: 8MB
+R
+[MEMORY] Growth: 0MB (0%)
+
+[PERF] Duration: 14.23ms | Memory: 0MB | Peak: 8MB
+RDatabase: Created new dedicated connection [127.0.0.1:3306:jcepnzzkmj:jcepnzzkmj]
+
+[POOL STATS]
+  Initial connections: 1
+  Final connections: 1
+  Total created: 1
+  Reused: 15
+
+[PERF] Duration: 12.49ms | Memory: 0MB | Peak: 8MB
+R
+[RAPID] 25 requests in 13.678073883057ms
+  Throughput: 1827.74 req/sec
+  Errors: 0
+
+[PERF] Duration: 13.9ms | Memory: 0MB | Peak: 8MB
+R
+[LARGE SET]
+  Duration: 0.64301490783691ms
+  Memory: 0MB
+  Allocations: 2
+
+[PERF] Duration: 0.76ms | Memory: 0MB | Peak: 8MB
+R
+[CONSISTENCY]
+  Avg: 0.51ms
+  StdDev: 0.04ms
+  CV: 8.09%
+
+[PERF] Duration: 7.87ms | Memory: 0MB | Peak: 8MB
+R                                                             7 / 7 (100%)
+
+Time: 00:00.075, Memory: 10.00 MB
+
+There were 7 risky tests:
+
+1) LoadTest::testSingleRequestPerformance
+Test code or tested code printed unexpected output: 
+[BASELINE] Single request: 1.5509128570557ms
+
+[PERF] Duration: 3.71ms | Memory: 0MB | Peak: 8MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:49
+
+2) LoadTest::testSequentialRequests
+Test code or tested code printed unexpected output: 
+[SEQUENTIAL] 10 requests:
+  Total: 12.530088424683ms
+  Avg: 0.63774585723877ms
+  Max: 0.77199935913086ms
+
+[PERF] Duration: 12.66ms | Memory: 0MB | Peak: 8MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:75
+
+3) LoadTest::testMemoryLeakDetection
+Test code or tested code printed unexpected output: 
+[MEMORY] Growth: 0MB (0%)
+
+[PERF] Duration: 14.23ms | Memory: 0MB | Peak: 8MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:115
+
+4) LoadTest::testConnectionPoolUnderLoad
+Test code or tested code printed unexpected output: 
+[POOL STATS]
+  Initial connections: 1
+  Final connections: 1
+  Total created: 1
+  Reused: 15
+
+[PERF] Duration: 12.49ms | Memory: 0MB | Peak: 8MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:159
+
+5) LoadTest::testRapidSequentialExecution
+Test code or tested code printed unexpected output: 
+[RAPID] 25 requests in 13.678073883057ms
+  Throughput: 1827.74 req/sec
+  Errors: 0
+
+[PERF] Duration: 13.9ms | Memory: 0MB | Peak: 8MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:203
+
+6) LoadTest::testLargeResultSetHandling
+Test code or tested code printed unexpected output: 
+[LARGE SET]
+  Duration: 0.64301490783691ms
+  Memory: 0MB
+  Allocations: 2
+
+[PERF] Duration: 0.76ms | Memory: 0MB | Peak: 8MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:241
+
+7) LoadTest::testResponseTimeConsistency
+Test code or tested code printed unexpected output: 
+[CONSISTENCY]
+  Avg: 0.51ms
+  StdDev: 0.04ms
+  CV: 8.09%
+
+[PERF] Duration: 7.87ms | Memory: 0MB | Peak: 8MB
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Performance/LoadTest.php:277
+
+OK, but there were issues!
+Tests: 7, Assertions: 22, PHPUnit Deprecations: 1, Risky: 7.
+[2025-10-10 11:29:07] Performance Suite: PASSED (0s)
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.1.33
+Configuration: /home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/phpunit.xml
+
+I.I...I
+[STABILITY] 50 executions: 50 success, 0 errors
+RDatabase: Closed 0 connection(s) from pool
+
+[RECOVERY] Auto-reconnect: Success (closed 0 connection(s))
+R
+[CLEANUP] Errors handled: 4/{4}
+  Initial connections: 0
+  Final connections: 0
+R                                                        10 / 10 (100%)
+
+Time: 00:00.060, Memory: 10.00 MB
+
+There were 3 risky tests:
+
+1) Tests\Chaos\ChaosTest::testRepeatedExecutionStability
+Test code or tested code printed unexpected output: 
+[STABILITY] 50 executions: 50 success, 0 errors
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php:235
+
+2) Tests\Chaos\ChaosTest::testDatabaseConnectionRecovery
+Test code or tested code printed unexpected output: 
+[RECOVERY] Auto-reconnect: Success (closed 0 connection(s))
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php:270
+
+3) Tests\Chaos\ChaosTest::testResourceCleanupAfterErrors
+Test code or tested code printed unexpected output: 
+[CLEANUP] Errors handled: 4/{4}
+  Initial connections: 0
+  Final connections: 0
+
+/home/129337.cloudwaysapps.com/jcepnzzkmj/public_html/assets/cron/utility_scripts/VAPESHED_TRANSFER_OLD/vapeshed_transfer/transfer_engine/tests/Chaos/ChaosTest.php:298
+
+OK, but there were issues!
+Tests: 10, Assertions: 22, PHPUnit Deprecations: 1, Incomplete: 3, Risky: 3.
+[2025-10-10 11:29:07] Chaos Suite: PASSED (0s)
+[2025-10-10 11:29:07] ==========================================
+[2025-10-10 11:29:07] Test Summary
+[2025-10-10 11:29:07] Total: 5 | Passed: 5 | Failed: 0
+[2025-10-10 11:29:07] Duration: 1s
+[2025-10-10 11:29:07] ==========================================
+[2025-10-10 11:29:07] Success Rate: 100%

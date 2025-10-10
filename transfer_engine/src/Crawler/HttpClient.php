@@ -19,14 +19,18 @@ final class HttpClient
     {
         $ch = curl_init();
         
-        curl_setopt_array($ch, [
+        // Build secure cURL options
+        $curlOpts = [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_MAXREDIRS => 5,
+            CURLOPT_FOLLOWLOCATION => false,        // Security: Prevent open redirect abuse
+            CURLOPT_MAXREDIRS => 0,
+            CURLOPT_CONNECTTIMEOUT => 5,            // Security: Connection timeout
             CURLOPT_TIMEOUT => $this->timeout,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => false,
+            CURLOPT_SSL_VERIFYPEER => true,         // Security: ENABLED - Verify SSL certificate
+            CURLOPT_SSL_VERIFYHOST => 2,            // Security: ENABLED - Verify hostname
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,   // Security: HTTPS only by default
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_2TLS, // Use HTTP/2 with TLS
             CURLOPT_USERAGENT => $this->userAgent,
             CURLOPT_HTTPHEADER => [
                 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -37,7 +41,15 @@ final class HttpClient
                 'Upgrade-Insecure-Requests: 1'
             ],
             CURLOPT_ENCODING => '', // Handle gzip/deflate automatically
-        ]);
+        ];
+        
+        // Allow custom CA bundle path from environment (optional)
+        $caInfo = getenv('CURL_CA_BUNDLE');
+        if ($caInfo !== false && is_file($caInfo)) {
+            $curlOpts[CURLOPT_CAINFO] = $caInfo;
+        }
+        
+        curl_setopt_array($ch, $curlOpts);
 
         $html = curl_exec($ch);
         $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);

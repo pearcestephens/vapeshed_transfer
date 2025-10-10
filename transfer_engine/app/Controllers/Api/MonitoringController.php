@@ -1,17 +1,17 @@
 <?php
 /**
  * MonitoringController.php - Monitoring & Observability API Controller
- * 
+ *
  * Provides API endpoints for performance monitoring, health checks,
  * log aggregation, and alerting management.
- * 
+ *
  * Endpoints:
  * - GET /api/monitoring/health - System health check
  * - GET /api/monitoring/performance - Performance metrics dashboard
  * - GET /api/monitoring/logs - Log search & aggregation
  * - GET /api/monitoring/alerts - Alert history & statistics
  * - POST /api/monitoring/alerts/send - Send test alert
- * 
+ *
  * @package VapeshedTransfer
  * @subpackage Controllers\Api
  * @author Vapeshed Transfer Engine
@@ -43,28 +43,28 @@ class MonitoringController extends BaseController
     public function __construct()
     {
         parent::__construct();
-        
+
         $cache = new Cache($this->logger);
-        
+
         $this->alertManager = new AlertManager(
             $this->logger,
             $cache,
             $this->getAlertConfig()
         );
-        
+
         $this->healthMonitor = new HealthMonitor(
             $this->logger,
             $cache,
             $this->alertManager,
             $this->getHealthConfig()
         );
-        
+
         $this->profiler = new PerformanceProfiler(
             $this->logger,
             $cache,
             $this->alertManager
         );
-        
+
         $this->logAggregator = new LogAggregator(
             $this->logger,
             storage_path('logs')
@@ -73,37 +73,37 @@ class MonitoringController extends BaseController
 
     /**
      * System health check endpoint
-     * 
+     *
      * GET /api/monitoring/health
-     * 
+     *
      * Query params:
      * - detailed: Include detailed check results (true/false)
-     * 
+     *
      * @return array Health check results
      */
     public function health(): array
     {
         $startTime = microtime(true);
-        
+
         try {
             $detailed = isset($_GET['detailed']) && $_GET['detailed'] === 'true';
             $result = $this->healthMonitor->check($detailed);
-            
+
             $duration = round((microtime(true) - $startTime) * 1000, 2);
-            
+
             return Api::success([
                 'health' => $result,
                 'meta' => [
                     'response_time_ms' => $duration,
                 ],
             ]);
-            
+
         } catch (\Exception $e) {
             $this->logger->error('Health check endpoint failed', NeuroContext::wrap([
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ], 'monitoring_controller'));
-            
+
             return Api::error(
                 'Health check failed: ' . $e->getMessage(),
                 500,
@@ -114,28 +114,28 @@ class MonitoringController extends BaseController
 
     /**
      * Health history endpoint
-     * 
+     *
      * GET /api/monitoring/health/history
-     * 
+     *
      * Query params:
      * - hours: Number of hours (default: 24)
-     * 
+     *
      * @return array Health history
      */
     public function healthHistory(): array
     {
         try {
             $hours = min(168, max(1, (int)($_GET['hours'] ?? 24))); // Max 7 days
-            
+
             $history = $this->healthMonitor->getHistory($hours);
             $trends = $this->healthMonitor->getTrends($hours);
-            
+
             return Api::success([
                 'history' => $history,
                 'trends' => $trends,
                 'hours' => $hours,
             ]);
-            
+
         } catch (\Exception $e) {
             return Api::error('Failed to retrieve health history: ' . $e->getMessage(), 500);
         }
@@ -143,12 +143,12 @@ class MonitoringController extends BaseController
 
     /**
      * Performance metrics dashboard endpoint
-     * 
+     *
      * GET /api/monitoring/performance
-     * 
+     *
      * Query params:
      * - range: Time range (5m, 1h, 6h, 24h, 7d, 30d)
-     * 
+     *
      * @return array Performance dashboard data
      */
     public function performance(): array
@@ -156,36 +156,36 @@ class MonitoringController extends BaseController
         try {
             $range = $_GET['range'] ?? '1h';
             $dashboard = $this->profiler->getDashboard($range);
-            
+
             return Api::success([
                 'dashboard' => $dashboard,
             ]);
-            
+
         } catch (\Exception $e) {
             $this->logger->error('Performance dashboard failed', NeuroContext::wrap([
                 'error' => $e->getMessage(),
             ], 'monitoring_controller'));
-            
+
             return Api::error('Failed to retrieve performance data: ' . $e->getMessage(), 500);
         }
     }
 
     /**
      * Current request metrics endpoint
-     * 
+     *
      * GET /api/monitoring/performance/current
-     * 
+     *
      * @return array Current request metrics
      */
     public function performanceCurrent(): array
     {
         try {
             $metrics = $this->profiler->getRequestMetrics();
-            
+
             return Api::success([
                 'metrics' => $metrics,
             ]);
-            
+
         } catch (\Exception $e) {
             return Api::error('Failed to retrieve current metrics: ' . $e->getMessage(), 500);
         }
@@ -193,9 +193,9 @@ class MonitoringController extends BaseController
 
     /**
      * Log search endpoint
-     * 
+     *
      * GET /api/monitoring/logs
-     * 
+     *
      * Query params:
      * - query: Search query string
      * - severity: Filter by severity (debug, info, warning, error, critical)
@@ -205,7 +205,7 @@ class MonitoringController extends BaseController
      * - page: Page number (default: 1)
      * - per_page: Items per page (default: 100, max: 1000)
      * - regex: Use regex search (true/false)
-     * 
+     *
      * @return array Log search results
      */
     public function logs(): array
@@ -221,30 +221,30 @@ class MonitoringController extends BaseController
                 'per_page' => (int)($_GET['per_page'] ?? 100),
                 'regex' => isset($_GET['regex']) && $_GET['regex'] === 'true',
             ];
-            
+
             $result = $this->logAggregator->search($filters);
-            
+
             return Api::success($result);
-            
+
         } catch (\Exception $e) {
             $this->logger->error('Log search failed', NeuroContext::wrap([
                 'error' => $e->getMessage(),
                 'filters' => $_GET,
             ], 'monitoring_controller'));
-            
+
             return Api::error('Log search failed: ' . $e->getMessage(), 500);
         }
     }
 
     /**
      * Log statistics endpoint
-     * 
+     *
      * GET /api/monitoring/logs/stats
-     * 
+     *
      * Query params:
      * - start_date: Start date (YYYY-MM-DD, default: 7 days ago)
      * - end_date: End date (YYYY-MM-DD, default: today)
-     * 
+     *
      * @return array Log statistics
      */
     public function logStats(): array
@@ -254,13 +254,13 @@ class MonitoringController extends BaseController
                 'start_date' => $_GET['start_date'] ?? date('Y-m-d', strtotime('-7 days')),
                 'end_date' => $_GET['end_date'] ?? date('Y-m-d'),
             ];
-            
+
             $stats = $this->logAggregator->getStats($filters);
-            
+
             return Api::success([
                 'stats' => $stats,
             ]);
-            
+
         } catch (\Exception $e) {
             return Api::error('Failed to retrieve log stats: ' . $e->getMessage(), 500);
         }
@@ -268,13 +268,13 @@ class MonitoringController extends BaseController
 
     /**
      * Log tail endpoint (real-time)
-     * 
+     *
      * GET /api/monitoring/logs/tail
-     * 
+     *
      * Query params:
      * - lines: Number of lines (default: 100, max: 1000)
      * - file: Specific log file (optional)
-     * 
+     *
      * @return array Recent log entries
      */
     public function logTail(): array
@@ -282,11 +282,11 @@ class MonitoringController extends BaseController
         try {
             $lines = min(1000, max(10, (int)($_GET['lines'] ?? 100)));
             $file = $_GET['file'] ?? null;
-            
+
             $result = $this->logAggregator->tail($lines, $file);
-            
+
             return Api::success($result);
-            
+
         } catch (\Exception $e) {
             return Api::error('Log tail failed: ' . $e->getMessage(), 500);
         }
@@ -294,31 +294,31 @@ class MonitoringController extends BaseController
 
     /**
      * Log export endpoint
-     * 
+     *
      * POST /api/monitoring/logs/export
-     * 
+     *
      * JSON body:
      * - filters: Search filters (same as /logs endpoint)
      * - format: Export format (json, csv)
-     * 
+     *
      * @return array Export result with download path
      */
     public function logExport(): array
     {
         Api::requireMethod('POST');
-        
+
         try {
             $body = Api::getJsonBody();
-            
+
             $filters = $body['filters'] ?? [];
             $format = $body['format'] ?? 'json';
-            
+
             $result = $this->logAggregator->export($filters, $format);
-            
+
             return Api::success([
                 'export' => $result,
             ]);
-            
+
         } catch (\Exception $e) {
             return Api::error('Log export failed: ' . $e->getMessage(), 500);
         }
@@ -326,12 +326,12 @@ class MonitoringController extends BaseController
 
     /**
      * Alert history endpoint
-     * 
+     *
      * GET /api/monitoring/alerts
-     * 
+     *
      * Query params:
      * - days: Number of days (default: 7, max: 30)
-     * 
+     *
      * @return array Alert statistics
      */
     public function alerts(): array
@@ -339,11 +339,11 @@ class MonitoringController extends BaseController
         try {
             $days = min(30, max(1, (int)($_GET['days'] ?? 7)));
             $stats = $this->alertManager->getStats($days);
-            
+
             return Api::success([
                 'alerts' => $stats,
             ]);
-            
+
         } catch (\Exception $e) {
             return Api::error('Failed to retrieve alerts: ' . $e->getMessage(), 500);
         }
@@ -351,40 +351,40 @@ class MonitoringController extends BaseController
 
     /**
      * Send test alert endpoint
-     * 
+     *
      * POST /api/monitoring/alerts/send
-     * 
+     *
      * JSON body:
      * - title: Alert title
      * - message: Alert message
      * - severity: Severity level (info, warning, error, critical)
      * - context: Additional context (optional)
      * - channels: Specific channels (optional)
-     * 
+     *
      * @return array Send result
      */
     public function sendAlert(): array
     {
         Api::requireMethod('POST');
-        
+
         try {
             $body = Api::getJsonBody();
-            
+
             // Validate required fields
             if (empty($body['title'])) {
                 return Api::error('Alert title is required', 400);
             }
-            
+
             if (empty($body['message'])) {
                 return Api::error('Alert message is required', 400);
             }
-            
+
             $title = $body['title'];
             $message = $body['message'];
             $severity = $body['severity'] ?? AlertManager::SEVERITY_INFO;
             $context = $body['context'] ?? [];
             $channels = $body['channels'] ?? null;
-            
+
             $result = $this->alertManager->send(
                 $title,
                 $message,
@@ -392,25 +392,25 @@ class MonitoringController extends BaseController
                 $context,
                 $channels
             );
-            
+
             return Api::success([
                 'alert' => $result,
             ]);
-            
+
         } catch (\Exception $e) {
             $this->logger->error('Alert send failed', NeuroContext::wrap([
                 'error' => $e->getMessage(),
             ], 'monitoring_controller'));
-            
+
             return Api::error('Failed to send alert: ' . $e->getMessage(), 500);
         }
     }
 
     /**
      * System overview endpoint (combined metrics)
-     * 
+     *
      * GET /api/monitoring/overview
-     * 
+     *
      * @return array System overview
      */
     public function overview(): array
@@ -423,7 +423,7 @@ class MonitoringController extends BaseController
                 'start_date' => date('Y-m-d'),
                 'end_date' => date('Y-m-d'),
             ]);
-            
+
             return Api::success([
                 'overview' => [
                     'health' => [
@@ -439,7 +439,7 @@ class MonitoringController extends BaseController
                     'errors_today' => ($logStats['by_severity']['error'] ?? 0) + ($logStats['by_severity']['critical'] ?? 0),
                 ],
             ]);
-            
+
         } catch (\Exception $e) {
             return Api::error('Failed to retrieve overview: ' . $e->getMessage(), 500);
         }

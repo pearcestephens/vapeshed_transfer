@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="config/bootstrap.php"
+         colors="true"
+         cacheDirectory=".phpunit.cache"
+         failOnWarning="true"
+         failOnRisky="true"
+         beStrictAboutOutputDuringTests="true"
+         beStrictAboutTodoAnnotatedTests="true">
+    
+    <testsuites>
+        <testsuite name="Basic">
+            <file>tests/Unit/TransferEngineBasicTest.php</file>
+        </testsuite>
+        <testsuite name="Security">
+            <directory>tests/Security</directory>
+        </testsuite>
+        <!-- Disabled until full integration environment available -->
+        <!--
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+            <exclude>tests/Unit/TransferEngineBasicTest.php</exclude>
+        </testsuite>
+        -->
+        <testsuite name="Integration">
+            <directory>tests/Integration</directory>
+        </testsuite>
+        <testsuite name="Performance">
+            <directory>tests/Performance</directory>
+        </testsuite>
+        <testsuite name="Chaos">
+            <directory>tests/Chaos</directory>
+        </testsuite>
+    </testsuites>
+
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+        <exclude>
+            <directory>app/Views</directory>
+        </exclude>
+    </source>
+
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="DB_HOST" value="127.0.0.1"/>
+        <env name="DB_NAME" value="jcepnzzkmj"/>
+        <env name="DB_USER" value="jcepnzzkmj"/>
+        <env name="DB_PASSWORD" value="wprKh9Jq63"/>
+    </php>
+
+    <logging>
+        <junit outputFile="storage/logs/tests/junit.xml"/>
+        <testdoxHtml outputFile="storage/logs/tests/testdox.html"/>
+        <testdoxText outputFile="storage/logs/tests/testdox.txt"/>
+    </logging>
+</phpunit>

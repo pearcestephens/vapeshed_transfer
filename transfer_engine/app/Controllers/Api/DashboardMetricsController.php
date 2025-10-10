@@ -16,7 +16,7 @@ class DashboardMetricsController extends BaseController
         try {
             $db = new mysqli(getenv('DB_HOST')?:'localhost', getenv('DB_USER')?:'root', getenv('DB_PASS')?:'', getenv('DB_NAME')?:'cis');
             if($db->connect_errno){ echo json_encode(['success'=>false,'error'=>'db_connect_failed']); return; }
-            
+
             $out = [
                 'acceptance_path_distribution' => $this->acceptancePathDist($db),
                 'rejection_reason_dist' => $this->rejectionReasonDist($db),

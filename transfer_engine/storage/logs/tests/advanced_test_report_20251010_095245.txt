@@ -1,0 +1,9 @@
+[2025-10-10 09:52:45] ==========================================
+[2025-10-10 09:52:45] Advanced Test Suite Execution Started
+[2025-10-10 09:52:45] ==========================================
+[2025-10-10 09:52:46] PHP: PHP 8.1.33 (cli) (built: Jul  3 2025 16:23:26) (NTS)
+[2025-10-10 09:52:46] PHPUnit: PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+PHPUnit 10.5.58 by Sebastian Bergmann and contributors.
+
+Unknown option "--verbose"
+[2025-10-10 09:52:46] Basic Suite: PASSED (0s)

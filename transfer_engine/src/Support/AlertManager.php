@@ -630,12 +630,33 @@ class SlackChannel
             CURLOPT_POST => true,
             CURLOPT_POSTFIELDS => json_encode($payload),
             CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
+            CURLOPT_CONNECTTIMEOUT => 5,            // Security: Connection timeout
             CURLOPT_TIMEOUT => 10,
+            CURLOPT_SSL_VERIFYPEER => true,         // Security: ENABLED - Verify SSL certificate
+            CURLOPT_SSL_VERIFYHOST => 2,            // Security: ENABLED - Verify hostname
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,   // Security: HTTPS only
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_2TLS, // Use HTTP/2 with TLS
+            CURLOPT_FOLLOWLOCATION => false,        // Security: Prevent redirects
         ]);
+        
+        // Allow custom CA bundle path from environment (optional)
+        $caInfo = getenv('CURL_CA_BUNDLE');
+        if ($caInfo !== false && is_file($caInfo)) {
+            curl_setopt($ch, CURLOPT_CAINFO, $caInfo);
+        }
         
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
         curl_close($ch);
+        
+        if ($response === false) {
+            return [
+                'success' => false,
+                'channel' => 'slack',
+                'error' => $error,
+            ];
+        }
         
         return [
             'success' => $httpCode === 200,
@@ -710,12 +731,33 @@ class WebhookChannel
                 ['Content-Type: application/json'],
                 $this->config['headers'] ?? []
             ),
+            CURLOPT_CONNECTTIMEOUT => 5,            // Security: Connection timeout
             CURLOPT_TIMEOUT => 10,
+            CURLOPT_SSL_VERIFYPEER => true,         // Security: ENABLED - Verify SSL certificate
+            CURLOPT_SSL_VERIFYHOST => 2,            // Security: ENABLED - Verify hostname
+            CURLOPT_PROTOCOLS => CURLPROTO_HTTPS,   // Security: HTTPS only
+            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_2TLS, // Use HTTP/2 with TLS
+            CURLOPT_FOLLOWLOCATION => false,        // Security: Prevent redirects
         ]);
+        
+        // Allow custom CA bundle path from environment (optional)
+        $caInfo = getenv('CURL_CA_BUNDLE');
+        if ($caInfo !== false && is_file($caInfo)) {
+            curl_setopt($ch, CURLOPT_CAINFO, $caInfo);
+        }
         
         $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
         curl_close($ch);
+        
+        if ($response === false) {
+            return [
+                'success' => false,
+                'channel' => 'webhook',
+                'error' => $error,
+            ];
+        }
         
         return [
             'success' => $httpCode >= 200 && $httpCode < 300,
